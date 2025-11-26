@@ -2,8 +2,8 @@ import 'package:conseilbox/shared/widgets/music_wave_loader.dart';
 import 'package:conseilbox/shared/widgets/status_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:conseilbox/features/home/home_screen.dart';
-import 'package:conseilbox/shared/widgets/bgstyle.dart';
 import 'package:conseilbox/config/app_colors.dart';
+import 'package:conseilbox/shared/widgets/bgstyle.dart'; // Import GeometricBackground
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
