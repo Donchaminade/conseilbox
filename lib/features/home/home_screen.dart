@@ -14,6 +14,7 @@ import '../../core/services/publicite_service.dart';
 import '../../core/widgets/card_conseil.dart';
 import '../../core/widgets/custom_navbar.dart';
 import '../../core/widgets/publicite_card.dart';
+import '../../shared/widgets/bgstyle.dart';
 import '../conseils/conseil_detail_screen.dart';
 import '../conseils/widgets/conseil_form_sheet.dart';
 import '../settings/settings_screen.dart';
@@ -51,6 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _favoritesManager.addListener(_handleFavoritesChanged);
     _fetchConseils();
     _fetchPublicites();
     _conseilsScrollController.addListener(_onScroll);
@@ -59,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    _favoritesManager.removeListener(_handleFavoritesChanged);
     _conseilsScrollController.dispose();
     _searchController.dispose();
     _carouselController.dispose();
@@ -180,6 +183,41 @@ class _HomeScreenState extends State<HomeScreen> {
     _restartCarouselTimer(itemCount: length);
   }
 
+  void _handleFavoritesChanged() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  void _toggleFavorite(Conseil conseil) {
+    _favoritesManager.toggle(conseil);
+    final isNowFavorite = _favoritesManager.isFavorite(conseil);
+    _showToast(
+      isNowFavorite ? 'Ajouté aux favoris' : 'Retiré des favoris',
+    );
+    setState(() {});
+  }
+
+  Future<void> _openDetail(Conseil conseil) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => ConseilDetailScreen(
+          conseil: conseil,
+          favorites: _favoritesManager,
+        ),
+      ),
+    );
+
+    if (changed == true && mounted) {
+      setState(() {});
+    }
+  }
+
+  void _shareConseil(Conseil conseil) {
+    final content =
+        '${conseil.title}\n${conseil.content}\nPartagé via ConseilBox';
+    Share.share(content);
+  }
+
   Future<void> _openCreateSheet() async {
     final Conseil? created = await showModalBottomSheet<Conseil>(
       context: context,
@@ -217,6 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       appBar: AppBar(
         title: const Text('ConseilBox'),
         actions: [
@@ -232,15 +271,19 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: IndexedStack(
-        index: _index,
+      body: Stack(
         children: [
-          _buildConseilsFeed(),
-          _buildConseilsExplorer(),
-          _buildPublicitesTab(),
-          _buildPlaceholder(
-            title: 'Bientôt disponible',
-            message: 'Vos favoris seront synchronisés ici.',
+          const GeometricBackground(),
+          Positioned.fill(
+            child: IndexedStack(
+              index: _index,
+              children: [
+                _buildConseilsFeed(),
+                _buildConseilsExplorer(),
+                _buildPublicitesTab(),
+                _buildFavoritesTab(),
+              ],
+            ),
           ),
         ],
       ),
@@ -253,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppColors.chocolat,
         icon: const Icon(Icons.add_circle_outline, color: Colors.white),
         label: const Text(
-          'Partager un conseil',
+          'Conseiller',
           style: TextStyle(color: Colors.white),
         ),
       ),
@@ -308,7 +351,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.only(bottom: 12),
               child: CardConseil(
                 conseil: conseil,
-                onTap: () => _openConseilDetail(conseil),
+                onTap: () => _openDetail(conseil),
                 isFavorite: _favoritesManager.isFavorite(conseil),
                 onShare: () => _shareConseil(conseil),
                 onFavorite: () => _toggleFavorite(conseil),
@@ -355,76 +398,71 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: (_filters['order'] as String?) ?? 'latest',
-                      decoration: InputDecoration(
-                        labelText: 'Tri',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'latest',
-                          child: Text('Plus récents'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'oldest',
-                          child: Text('Plus anciens'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'random',
-                          child: Text('Aléatoires'),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() {
-                          _filters = {..._filters, 'order': value};
-                        });
-                        _fetchConseils();
-                      },
-                    ),
+              DropdownButtonFormField<String>(
+                value: (_filters['order'] as String?) ?? 'latest',
+                decoration: InputDecoration(
+                  labelText: 'Tri',
+                  prefixIcon: const Icon(Icons.sort_rounded),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _filters['status'] as String? ?? 'published',
-                      decoration: InputDecoration(
-                        labelText: 'Statut',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'published',
-                          child: Text('Publiés'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'pending',
-                          child: Text('En attente'),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() {
-                          _filters = {..._filters, 'status': value};
-                        });
-                        _fetchConseils();
-                      },
-                    ),
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: 'latest',
+                    child: Text('Plus récents'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'oldest',
+                    child: Text('Plus anciens'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'random',
+                    child: Text('Aléatoires'),
                   ),
                 ],
+                onChanged: (value) {
+                  if (value == null) return;
+                  setState(() {
+                    _filters = {..._filters, 'order': value};
+                  });
+                  _fetchConseils();
+                },
               ),
             ],
           ),
         ),
         Expanded(child: _buildConseilsFeed()),
       ],
+    );
+  }
+
+  Widget _buildFavoritesTab() {
+    final favorites = _favoritesManager.items;
+    if (favorites.isEmpty) {
+      return _buildPlaceholder(
+        title: 'Aucun favori',
+        message:
+            'Touchez le coeur d\'un conseil pour l\'enregistrer et le retrouver ici.',
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 120, left: 16, right: 16, top: 16),
+      itemCount: favorites.length,
+      itemBuilder: (context, index) {
+        final conseil = favorites[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: CardConseil(
+            conseil: conseil,
+            onTap: () => _openDetail(conseil),
+            onShare: () => _shareConseil(conseil),
+            onFavorite: () => _toggleFavorite(conseil),
+            isFavorite: true,
+          ),
+        );
+      },
     );
   }
 
@@ -517,7 +555,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: Text(
                 showingDefaults
-                    ? 'Inspiration ConseilBox'
+                    ? 'Donne moi un Conseil...'
                     : 'Tech pubs en vedette',
                 style: AppTextStyles.title,
               ),
@@ -534,7 +572,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(
-              'Impossible de charger vos publicités. Nous affichons des inspirations ConseilBox en attendant.',
+              'Espace pubs',
               style: AppTextStyles.small.copyWith(color: Colors.red.shade700),
             ),
           ),
@@ -740,38 +778,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _setTab(int value) {
     setState(() => _index = value);
-  }
-
-  void _shareConseil(Conseil conseil) {
-    final message = '${conseil.title} - ${conseil.content}\n'
-        'Découvert dans ConseilBox.';
-    Share.share(message);
-  }
-
-  Future<void> _openConseilDetail(Conseil conseil) async {
-    final bool? changed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => ConseilDetailScreen(
-          conseil: conseil,
-          favorites: _favoritesManager,
-        ),
-      ),
-    );
-
-    if (changed == true) {
-      setState(() {});
-    }
-  }
-
-  void _toggleFavorite(Conseil conseil) {
-    setState(() {
-      _favoritesManager.toggle(conseil);
-    });
-    _showToast(
-      _favoritesManager.isFavorite(conseil)
-          ? 'Ajouté aux favoris'
-          : 'Retiré des favoris',
-    );
   }
 
   Widget _buildPublicitesTab() {

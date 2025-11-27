@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../config/app_colors.dart';
 import '../../config/app_text_styles.dart';
 import 'about_screen.dart';
 import 'donate_screen.dart';
@@ -42,32 +43,136 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Paramètres'),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, index) {
-          final item = items[index];
-          return Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: ListTile(
-              leading: CircleAvatar(
-                radius: 22,
-                backgroundColor: Colors.brown.withValues(alpha: 0.12),
-                child: Icon(item.icon, color: Colors.brown),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.chocolat.withValues(alpha: 0.08),
+                    Colors.white,
+                  ],
+                ),
               ),
-              title: Text(item.title, style: AppTextStyles.title),
-              subtitle: Text(item.subtitle, style: AppTextStyles.small),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: item.builder),
-                );
-              },
             ),
-          );
-        },
+          ),
+          SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            child: Column(
+              children: [
+                const _SettingsHeroCard(),
+                const SizedBox(height: 20),
+                ...items.map((item) => _SettingTile(item: item)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsHeroCard extends StatelessWidget {
+  const _SettingsHeroCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: const LinearGradient(
+          colors: [AppColors.chocolat, AppColors.cafe],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.chocolat.withValues(alpha: 0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Espace Paramètres',
+            style: AppTextStyles.title.copyWith(
+              color: Colors.white,
+              fontSize: 24,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Centralisez vos actions communautaires, vos soutiens et vos demandes de services.',
+            style: AppTextStyles.body.copyWith(color: Colors.white70),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingTile extends StatelessWidget {
+  const _SettingTile({required this.item});
+
+  final _SettingItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: item.builder),
+        ),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.chocolat.withValues(alpha: 0.08),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.chocolat.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(item.icon, color: AppColors.chocolat),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.title, style: AppTextStyles.title),
+                      const SizedBox(height: 4),
+                      Text(item.subtitle, style: AppTextStyles.small),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

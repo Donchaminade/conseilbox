@@ -29,71 +29,75 @@ class CardConseil extends StatelessWidget {
 
     final location =
         conseil.location?.isNotEmpty == true ? conseil.location : null;
-    final metadata = [
-      if (location != null) location,
-      formattedDate,
-    ].join(' • ');
+    final initials = conseil.author.trim();
 
+    final socialCount = conseil.socialLinks.length;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(20),
       child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 2,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        color: Colors.transparent,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              colors: [
+                AppColors.blanc,
+                AppColors.chocolat.withValues(alpha: 0.03),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border:
+                Border.all(color: AppColors.chocolat.withValues(alpha: 0.08)),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.chocolat.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
+                  CircleAvatar(
+                    backgroundColor: AppColors.chocolat.withValues(alpha: 0.15),
+                    foregroundColor: AppColors.chocolat,
+                    radius: 24,
+                    child: Text(
+                      initials.isNotEmpty ? initials[0].toUpperCase() : '?',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(conseil.title, style: AppTextStyles.title),
+                        Text(conseil.title,
+                            style: AppTextStyles.title.copyWith(fontSize: 20)),
                         const SizedBox(height: 4),
-                        Text(
-                          'par ${conseil.author}',
-                          style: AppTextStyles.small,
+                        Row(
+                          children: [
+                            const Icon(Icons.person_outline,
+                                size: 16, color: AppColors.chocolat),
+                            const SizedBox(width: 4),
+                            Text(
+                              conseil.author,
+                              style: AppTextStyles.small,
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  if (!conseil.isPublished)
-                    Chip(
-                      label: const Text('En attente'),
-                      backgroundColor:
-                          AppColors.chocolat.withValues(alpha: 0.1),
-                      labelStyle: AppTextStyles.label
-                          .copyWith(color: AppColors.chocolat),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                conseil.content,
-                style: AppTextStyles.body,
-              ),
-              if (conseil.anecdote?.isNotEmpty == true) ...[
-                const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.chocolat.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Anecdote: ${conseil.anecdote!}',
-                    style: AppTextStyles.body,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(child: Text(metadata, style: AppTextStyles.small)),
                   IconButton(
                     icon: const Icon(Icons.share_outlined),
                     onPressed: onShare,
@@ -107,9 +111,94 @@ class CardConseil extends StatelessWidget {
                   ),
                 ],
               ),
+              if (!conseil.isPublished) ...[
+                const SizedBox(height: 8),
+                Chip(
+                  label: const Text('En attente'),
+                  backgroundColor: AppColors.chocolat.withValues(alpha: 0.1),
+                  labelStyle:
+                      AppTextStyles.label.copyWith(color: AppColors.chocolat),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Text(
+                conseil.content,
+                style: AppTextStyles.body.copyWith(fontSize: 16),
+              ),
+              if (conseil.anecdote?.isNotEmpty == true) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.chocolat.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.auto_awesome, color: AppColors.chocolat),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          conseil.anecdote!,
+                          style: AppTextStyles.body,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (location != null)
+                    _MetaChip(
+                      icon: Icons.place_outlined,
+                      label: location,
+                    ),
+                  _MetaChip(
+                    icon: Icons.calendar_today_outlined,
+                    label: formattedDate,
+                  ),
+                  if (socialCount > 0)
+                    _MetaChip(
+                      icon: Icons.link,
+                      label: '$socialCount lien${socialCount > 1 ? 's' : ''}',
+                    ),
+                ],
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MetaChip extends StatelessWidget {
+  const _MetaChip({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.chocolat.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: AppColors.chocolat),
+          const SizedBox(width: 4),
+          Text(label, style: AppTextStyles.small),
+        ],
       ),
     );
   }
