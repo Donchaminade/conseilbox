@@ -18,4 +18,8 @@ class AppTextStyles {
     color: AppColors.textSecondary,
     fontSize: 14,
   );
+  static final TextStyle label = GoogleFonts.delius(
+    color: AppColors.textSecondary,
+    fontSize: 12,
+  );
 }

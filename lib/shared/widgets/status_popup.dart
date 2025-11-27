@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 enum PopupStatus { success, error }
 
-Future<void> showStatusPopup(BuildContext context, PopupStatus status, String message) {
+Future<void> showStatusPopup(
+    BuildContext context, PopupStatus status, String message) {
   IconData icon;
   Color color;
 

@@ -11,7 +11,8 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _zoomAnimation;
   late Animation<double> _rotationAnimation;
@@ -22,20 +23,20 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 5),
     )..repeat();
 
     _zoomAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Curves.easeInOut,
+        curve: Curves.fastLinearToSlowEaseIn,
       ),
     );
 
-    _rotationAnimation = Tween<double>(begin: 0, end: 1).animate(
+    _rotationAnimation = Tween<double>(begin: 0, end: 3).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Curves.linear,
+        curve: Curves.easeOutExpo,
       ),
     );
 
@@ -73,16 +74,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.cafe,
-                        width: 4,
+                        color:
+                            AppColors.cafe, //couleur du cercle autour du logo
+                        width: 6,
                       ),
                     ),
                   ),
                 ),
                 ScaleTransition(
-                  scale: _zoomAnimation,
+                  scale: _zoomAnimation, //animation du logo
                   child: Image.asset('assets/images/logo.png', width: 200),
-                  
                 ),
               ],
             ),

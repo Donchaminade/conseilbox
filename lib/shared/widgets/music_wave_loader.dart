@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
 import 'package:conseilbox/config/app_colors.dart';
 
 class MusicWaveLoader extends StatefulWidget {
@@ -9,7 +8,8 @@ class MusicWaveLoader extends StatefulWidget {
   _MusicWaveLoaderState createState() => _MusicWaveLoaderState();
 }
 
-class _MusicWaveLoaderState extends State<MusicWaveLoader> with SingleTickerProviderStateMixin {
+class _MusicWaveLoaderState extends State<MusicWaveLoader>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late List<Animation<double>> _animations;
 
@@ -48,7 +48,7 @@ class _MusicWaveLoaderState extends State<MusicWaveLoader> with SingleTickerProv
           animation: _animations[index],
           builder: (context, child) {
             return Container(
-              width: 10, 
+              width: 10,
               height: _animations[index].value,
               margin: const EdgeInsets.symmetric(horizontal: 2),
               decoration: BoxDecoration(

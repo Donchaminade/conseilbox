@@ -8,7 +8,10 @@ class AppTheme {
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.background,
       primaryColor: AppColors.cafe,
-      colorScheme: ColorScheme.fromSeed(seedColor: AppColors.cafe, primary: AppColors.cafe, secondary: AppColors.chocolat),
+      colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.cafe,
+          primary: AppColors.cafe,
+          secondary: AppColors.chocolat),
       textTheme: TextTheme(
         titleLarge: AppTextStyles.title,
         bodyMedium: AppTextStyles.body,

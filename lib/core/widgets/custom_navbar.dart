@@ -5,7 +5,8 @@ class CustomNavbar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
 
-  const CustomNavbar({super.key, required this.currentIndex, required this.onTap});
+  const CustomNavbar(
+      {super.key, required this.currentIndex, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -18,20 +19,21 @@ class CustomNavbar extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       items: const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
+          icon: Icon(Icons.home_outlined),
           label: "Accueil",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.lightbulb),
+          icon: Icon(Icons
+              .lightbulb), //     [interpreter_mode_sharp...> (micro a cote de icone de usersgroup)]
           label: "Conseils",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.add),
-          label: "Ajouter",
+          icon: Icon(Icons.public),
+          label: "Tech pub",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: "Profil",
+          icon: Icon(Icons.favorite),
+          label: "Favoris",
         ),
       ],
     );

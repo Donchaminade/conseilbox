@@ -18,7 +18,8 @@ class GeometricBackground extends StatelessWidget {
               width: 240,
               height: 240,
               decoration: BoxDecoration(
-                color: AppColors.cafe.withOpacity(0.6), // Darker rotated square for depth effect top left
+                color: AppColors.cafe.withOpacity(
+                    0.6), // Darker rotated square for depth effect top left
                 borderRadius: BorderRadius.circular(60),
               ),
             ),
@@ -29,20 +30,22 @@ class GeometricBackground extends StatelessWidget {
           right: -100,
           child: CircleAvatar(
             radius: 180,
-            backgroundColor: AppColors.chocolat.withOpacity(0.2), // Large faded circle for depth effect bottom right
-          ),
-        ),
-         Positioned(
-          top: 200,
-          right: -50,
-          child: CircleAvatar(
-            radius: 60,
-            backgroundColor: AppColors.cafe.withOpacity(0.3), // Lighter circle for depth effect right
+            backgroundColor: AppColors.chocolat.withOpacity(
+                0.2), // Large faded circle for depth effect bottom right
           ),
         ),
         Positioned(
           top: 200,
-          left: -80,
+          right: -50,
+          child: CircleAvatar(
+            radius: 60,
+            backgroundColor: AppColors.cafe
+                .withOpacity(0.3), // Lighter circle for depth effect right
+          ),
+        ),
+        Positioned(
+          top: 100,
+          left: -40,
           child: Transform.rotate(
             angle: pi / 6,
             child: Container(
@@ -55,12 +58,13 @@ class GeometricBackground extends StatelessWidget {
             ),
           ),
         ),
-         Positioned(
+        Positioned(
           bottom: 150,
           left: -40,
           child: CircleAvatar(
             radius: 40,
-            backgroundColor: AppColors.cafe.withOpacity(0.4), // Lighter circle for depth effect left
+            backgroundColor: AppColors.cafe
+                .withOpacity(0.4), // Lighter circle for depth effect left
           ),
         ),
       ],

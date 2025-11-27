@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final String _correctCode = "IrokouKaizen";
   bool _isLoading = false;
   String _errorMessage = '';
+  bool _isObscure = true; // Added for password visibility toggle
 
   void _login() async {
     setState(() {
@@ -49,14 +50,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (_codeController.text == _correctCode) {
       if (mounted) {
-        await showStatusPopup(context, PopupStatus.success, "Connexion réussie !");
+        await showStatusPopup(
+            context, PopupStatus.success, "Connexion réussie !");
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
       }
     } else {
       if (mounted) {
-        await showStatusPopup(context, PopupStatus.error, "Code incorrect. Veuillez réessayer.");
+        await showStatusPopup(
+            context, PopupStatus.error, "Code incorrect. Veuillez réessayer.");
         setState(() {
           _isLoading = false;
         });
@@ -80,7 +83,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     'assets/images/logo.png',
                     height: 200, //taille du logo
                   ),
-                  const SizedBox(height: 4), // Espace entre le logo et le formulaire
+                  const SizedBox(
+                      height: 4), // Espace entre le logo et le formulaire
                   Container(
                     padding: const EdgeInsets.all(24.0),
                     decoration: BoxDecoration(
@@ -92,21 +96,35 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         TextField(
                           controller: _codeController,
+                          obscureText: _isObscure, // Use the state variable
                           decoration: InputDecoration(
                             labelText: "Entrez le code unique",
-                            errorText: _errorMessage.isNotEmpty ? _errorMessage : null,
+                            errorText:
+                                _errorMessage.isNotEmpty ? _errorMessage : null,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isObscure
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isObscure = !_isObscure;
+                                });
+                              },
+                            ),
                           ),
-                          obscureText: true,
                         ),
                         const SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: _login,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.cafe,
-                            padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 50, vertical: 15),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
