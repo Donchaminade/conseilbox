@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../config/app_colors.dart';
 import '../../config/app_text_styles.dart';
+import '../../core/managers/favorites_manager.dart';
 import '../../core/models/conseil.dart';
 import '../../core/models/paginated_response.dart';
 import '../../core/models/publicite.dart';
@@ -12,8 +14,9 @@ import '../../core/services/publicite_service.dart';
 import '../../core/widgets/card_conseil.dart';
 import '../../core/widgets/custom_navbar.dart';
 import '../../core/widgets/publicite_card.dart';
-import '../settings/settings_screen.dart';
+import '../conseils/conseil_detail_screen.dart';
 import '../conseils/widgets/conseil_form_sheet.dart';
+import '../settings/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,6 +28,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final ConseilService _conseilService = ConseilService();
   final PubliciteService _publiciteService = PubliciteService();
+  final FavoritesManager _favoritesManager = FavoritesManager();
   final ScrollController _conseilsScrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final PageController _carouselController =
@@ -304,8 +308,10 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.only(bottom: 12),
               child: CardConseil(
                 conseil: conseil,
-                onShare: () => _showToast('Partage bientôt disponible'),
-                onFavorite: () => _showToast('Fonction Favoris à venir'),
+                onTap: () => _openConseilDetail(conseil),
+                isFavorite: _favoritesManager.isFavorite(conseil),
+                onShare: () => _shareConseil(conseil),
+                onFavorite: () => _toggleFavorite(conseil),
               ),
             );
           }
@@ -734,6 +740,38 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _setTab(int value) {
     setState(() => _index = value);
+  }
+
+  void _shareConseil(Conseil conseil) {
+    final message = '${conseil.title} - ${conseil.content}\n'
+        'Découvert dans ConseilBox.';
+    Share.share(message);
+  }
+
+  Future<void> _openConseilDetail(Conseil conseil) async {
+    final bool? changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => ConseilDetailScreen(
+          conseil: conseil,
+          favorites: _favoritesManager,
+        ),
+      ),
+    );
+
+    if (changed == true) {
+      setState(() {});
+    }
+  }
+
+  void _toggleFavorite(Conseil conseil) {
+    setState(() {
+      _favoritesManager.toggle(conseil);
+    });
+    _showToast(
+      _favoritesManager.isFavorite(conseil)
+          ? 'Ajouté aux favoris'
+          : 'Retiré des favoris',
+    );
   }
 
   Widget _buildPublicitesTab() {

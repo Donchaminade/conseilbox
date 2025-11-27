@@ -12,12 +12,14 @@ class CardConseil extends StatelessWidget {
     this.onTap,
     this.onShare,
     this.onFavorite,
+    this.isFavorite = false,
   });
 
   final Conseil conseil;
   final VoidCallback? onTap;
   final VoidCallback? onShare;
   final VoidCallback? onFavorite;
+  final bool isFavorite;
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +99,10 @@ class CardConseil extends StatelessWidget {
                     onPressed: onShare,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.favorite_border),
+                    icon: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? AppColors.chocolat : null,
+                    ),
                     onPressed: onFavorite,
                   ),
                 ],
