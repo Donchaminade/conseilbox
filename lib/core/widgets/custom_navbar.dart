@@ -20,7 +20,11 @@ class CustomNavbar extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: AppColors.blanc,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: AppColors.cafe.withValues(alpha: 0.2),
+              width: 1.2,
+            ),
             boxShadow: [
               BoxShadow(
                 color: AppColors.chocolat.withValues(alpha: 0.12),
@@ -30,7 +34,7 @@ class CustomNavbar extends StatelessWidget {
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(25),
+            borderRadius: BorderRadius.circular(30),
             child: BottomNavigationBar(
               currentIndex: currentIndex,
               onTap: onTap,

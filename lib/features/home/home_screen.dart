@@ -16,7 +16,9 @@ import '../../core/widgets/custom_navbar.dart';
 import '../../core/widgets/publicite_card.dart';
 import '../../shared/widgets/bgstyle.dart';
 import '../conseils/conseil_detail_screen.dart';
+import '../conseils/my_suggestions_screen.dart';
 import '../conseils/widgets/conseil_form_sheet.dart';
+import '../publicites/publicite_detail_screen.dart';
 import '../settings/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -40,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _loadingMore = false;
   String? _conseilsError;
   List<Conseil> _conseils = [];
+  final List<Conseil> _mySuggestions = [];
   PaginatedResponse<Conseil>? _pagination;
   Map<String, dynamic> _filters = {'order': 'latest', 'status': 'published'};
 
@@ -218,6 +221,34 @@ class _HomeScreenState extends State<HomeScreen> {
     Share.share(content);
   }
 
+  Future<void> _openSuggestions() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MySuggestionsScreen(
+          suggestions: _mySuggestions,
+          favorites: _favoritesManager,
+          onCreate: _handleSuggestionCreate,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleSuggestionCreate() async {
+    final beforeCount = _mySuggestions.length;
+    await _openCreateSheet();
+    if (mounted && _mySuggestions.length > beforeCount) {
+      setState(() {});
+    }
+  }
+
+  void _openPubliciteDetail(Publicite publicite) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PubliciteDetailScreen(publicite: publicite),
+      ),
+    );
+  }
+
   Future<void> _openCreateSheet() async {
     final Conseil? created = await showModalBottomSheet<Conseil>(
       context: context,
@@ -228,6 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (created != null && mounted) {
       setState(() {
         _conseils = [created, ..._conseils];
+        _mySuggestions.insert(0, created);
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -296,20 +328,23 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppColors.chocolat,
         icon: const Icon(Icons.add_circle_outline, color: Colors.white),
         label: const Text(
-          'Conseiller',
+          'Partager un conseil',
           style: TextStyle(color: Colors.white),
         ),
       ),
     );
   }
 
-  Widget _buildConseilsFeed() {
+  Widget _buildConseilsFeed({bool includeHeader = true}) {
     final bool showFallback = _conseils.isEmpty;
     final List<Conseil> displayedConseils =
         showFallback ? _fallbackConseils : _conseils;
     final bool showLoader = _loadingMore && !showFallback;
+    final bool showNoticeWithoutHeader =
+        !includeHeader && _conseilsError != null && showFallback;
+    final int headerCount = includeHeader || showNoticeWithoutHeader ? 1 : 0;
     final int totalItems =
-        1 /* header */ + displayedConseils.length + (showLoader ? 1 : 0);
+        headerCount + displayedConseils.length + (showLoader ? 1 : 0);
 
     return RefreshIndicator(
       onRefresh: () => _fetchConseils(),
@@ -320,30 +355,41 @@ class _HomeScreenState extends State<HomeScreen> {
             const EdgeInsets.only(bottom: 120, left: 16, right: 16, top: 16),
         itemCount: totalItems,
         itemBuilder: (context, index) {
-          if (index == 0) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildHomeHeader(context),
-                if (_loadingConseils)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: LinearProgressIndicator(minHeight: 3),
-                  ),
-                if (_conseilsError != null && showFallback)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      'Connexion instable. Nous partageons quelques conseils sélectionnés en attendant vos données.',
-                      style: AppTextStyles.small
-                          .copyWith(color: Colors.red.shade700),
+          if (headerCount == 1 && index == 0) {
+            if (includeHeader) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildHomeHeader(context),
+                  if (_loadingConseils)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: LinearProgressIndicator(minHeight: 3),
                     ),
-                  ),
-              ],
-            );
+                  if (_conseilsError != null && showFallback)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        'Connexion instable. Nous partageons quelques conseils sélectionnés en attendant vos données.',
+                        style: AppTextStyles.small
+                            .copyWith(color: Colors.red.shade700),
+                      ),
+                    ),
+                ],
+              );
+            } else {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  'Connexion instable. Nous partageons quelques conseils sélectionnés en attendant vos données.',
+                  style:
+                      AppTextStyles.small.copyWith(color: Colors.red.shade700),
+                ),
+              );
+            }
           }
 
-          final int dataIndex = index - 1;
+          final int dataIndex = index - headerCount;
 
           if (dataIndex < displayedConseils.length) {
             final conseil = displayedConseils[dataIndex];
@@ -432,7 +478,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        Expanded(child: _buildConseilsFeed()),
+        Expanded(child: _buildConseilsFeed(includeHeader: false)),
       ],
     );
   }
@@ -555,7 +601,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: Text(
                 showingDefaults
-                    ? 'Donne moi un Conseil...'
+                    ? 'Inspiration ConseilBox'
                     : 'Tech pubs en vedette',
                 style: AppTextStyles.title,
               ),
@@ -588,10 +634,13 @@ class _HomeScreenState extends State<HomeScreen> {
               return Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: GestureDetector(
-                  onTap: item.targetUrl == null
-                      ? null
-                      : () => _showToast(
-                          'Ouverture de ${item.targetUrl} bientôt disponible'),
+                  onTap: () {
+                    if (item.publicite != null) {
+                      _openPubliciteDetail(item.publicite!);
+                    } else {
+                      _showToast('Inspirations ConseilBox');
+                    }
+                  },
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: Stack(
@@ -676,6 +725,7 @@ class _HomeScreenState extends State<HomeScreen> {
             content: pub.content,
             imageUrl: pub.imageUrl,
             targetUrl: pub.targetUrl,
+            publicite: pub,
             isDefault: false,
           ),
         )
@@ -748,6 +798,12 @@ class _HomeScreenState extends State<HomeScreen> {
               label: 'Favoris',
               onTap: () => _setTab(3),
             ),
+            _quickActionButton(
+              width: actionWidth,
+              icon: Icons.list_alt,
+              label: 'Mes suggestions',
+              onTap: _openSuggestions,
+            ),
           ],
         ),
       ],
@@ -806,10 +862,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final pub = _publicites[index];
           return PubliciteCard(
             publicite: pub,
-            onTap: pub.targetUrl == null
-                ? null
-                : () => _showToast(
-                    'Ouverture de ${pub.targetUrl} bientôt disponible'),
+            onTap: () => _openPubliciteDetail(pub),
           );
         },
       ),
@@ -882,6 +935,7 @@ class _CarouselItem {
     this.imageUrl,
     this.assetPath,
     this.targetUrl,
+    this.publicite,
     this.isDefault = true,
   });
 
@@ -890,6 +944,7 @@ class _CarouselItem {
   final String? imageUrl;
   final String? assetPath;
   final String? targetUrl;
+  final Publicite? publicite;
   final bool isDefault;
 }
 

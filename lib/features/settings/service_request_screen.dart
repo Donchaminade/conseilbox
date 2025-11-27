@@ -28,13 +28,13 @@ class ServiceRequestScreen extends StatelessWidget {
               style: AppTextStyles.body,
             ),
             const SizedBox(height: 24),
-            Card(
+            const Card(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.all(Radius.circular(20)),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: const Column(
+                padding: EdgeInsets.all(16),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Services populaires'),
@@ -59,7 +59,7 @@ class ServiceRequestScreen extends StatelessWidget {
               label: const Text('Remplir une demande'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(50),
-                side: BorderSide(color: AppColors.chocolat),
+                side: const BorderSide(color: AppColors.chocolat),
                 foregroundColor: AppColors.chocolat,
               ),
             ),
