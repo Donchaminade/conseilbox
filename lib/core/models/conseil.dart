@@ -44,7 +44,17 @@ class Conseil {
 
   static DateTime? _parseDate(dynamic value) {
     if (value is String && value.isNotEmpty) {
-      return DateTime.tryParse(value);
+      try {
+        return DateTime.parse(value);
+      } catch (e) {
+        // ignore: avoid_print
+        print('Failed to parse date: "$value" -> $e');
+        return null;
+      }
+    }
+    // Also, handle cases where the API might send an integer timestamp.
+    if (value is int) {
+      return DateTime.fromMillisecondsSinceEpoch(value * 1000);
     }
     return null;
   }

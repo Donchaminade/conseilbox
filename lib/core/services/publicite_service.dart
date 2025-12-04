@@ -11,7 +11,7 @@ class PubliciteService {
   Future<List<Publicite>> fetchPublicites({int limit = 10}) async {
     final response = await _apiClient.get(
       '/publicites',
-      queryParameters: {'limit': limit, 'only_active': true},
+      queryParameters: {'limit': limit, 'only_active': '1'},
     );
 
     final data = response.data;

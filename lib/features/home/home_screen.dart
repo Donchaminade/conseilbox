@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:conseilbox/core/network/api_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -108,7 +109,8 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _conseilsError = error.toString();
+        _conseilsError =
+            error is ApiException ? error.message : error.toString();
       });
     } finally {
       if (mounted) {

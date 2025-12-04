@@ -15,32 +15,34 @@ class PubliciteDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Espace pub'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          _HeroBanner(publicite: publicite),
-          const SizedBox(height: 24),
-          Text(publicite.content,
-              style: AppTextStyles.body.copyWith(fontSize: 18)),
-          const SizedBox(height: 24),
-          _InfoTile(
-            icon: Icons.public,
-            label: 'Lien cible',
-            value: publicite.targetUrl ?? 'Bientôt disponible',
-          ),
-          _InfoTile(
-            icon: Icons.check_circle_outline,
-            label: 'Statut',
-            value: publicite.isActive ? 'Active' : 'Inactive',
-          ),
-          if (publicite.createdAt != null)
+      body: SizedBox(
+        child: ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            _HeroBanner(publicite: publicite),
+            const SizedBox(height: 24),
+            Text(publicite.content,
+                style: AppTextStyles.body.copyWith(fontSize: 18)),
+            const SizedBox(height: 24),
             _InfoTile(
-              icon: Icons.calendar_today_outlined,
-              label: 'Publié le',
-              value: MaterialLocalizations.of(context)
-                  .formatMediumDate(publicite.createdAt!.toLocal()),
+              icon: Icons.public,
+              label: 'Lien cible',
+              value: publicite.targetUrl ?? 'Bientôt disponible',
             ),
-        ],
+            _InfoTile(
+              icon: Icons.check_circle_outline,
+              label: 'Statut',
+              value: publicite.isActive ? 'Active' : 'Inactive',
+            ),
+            if (publicite.createdAt != null)
+              _InfoTile(
+                icon: Icons.calendar_today_outlined,
+                label: 'Publié le',
+                value: MaterialLocalizations.of(context)
+                    .formatMediumDate(publicite.createdAt!.toLocal()),
+              ),
+          ],
+        ),
       ),
     );
   }

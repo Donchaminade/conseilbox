@@ -19,15 +19,12 @@ class ApiConfig {
       return _override;
     }
 
-    if (kIsWeb) {
-      return 'http://localhost:8000/admin';
-    }
+    // Hardcode the local network IP for reliable debugging across devices.
+    return 'http://192.168.1.90:8000/api';
+  }
 
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-        return 'http://10.0.2.2:8000/admin';
-      default:
-        return 'http://127.0.0.1:8000/admin';
-    }
+  // Ajouté pour la base URL des images
+  static String get baseImageUrl {
+    return 'http://192.168.1.90:8000/storage/';
   }
 }
