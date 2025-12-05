@@ -20,11 +20,11 @@ class ApiConfig {
     }
 
     // Hardcode the local network IP for reliable debugging across devices.
-    return 'http://192.168.1.90:8000/api';
+    return 'https://conseilbox-api.grosbit.com/api';
   }
 
   // Ajouté pour la base URL des images
   static String get baseImageUrl {
-    return 'http://192.168.1.90:8000/storage/';
+    return 'https://conseilbox-api.grosbit.com/storage/';
   }
 }
