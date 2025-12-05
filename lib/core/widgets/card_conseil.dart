@@ -124,9 +124,12 @@ class CardConseil extends StatelessWidget {
               Text(
                 conseil.content,
                 style: AppTextStyles.body.copyWith(fontSize: 16),
+                maxLines: 2, // Réduit à une ligne
+                overflow: TextOverflow.ellipsis, // Ajouter des points de suspension
               ),
               if (conseil.anecdote?.isNotEmpty == true) ...[
                 const SizedBox(height: 12),
+                
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
@@ -139,10 +142,13 @@ class CardConseil extends StatelessWidget {
                     children: [
                       const Icon(Icons.auto_awesome, color: AppColors.chocolat),
                       const SizedBox(width: 8),
+                      
                       Expanded(
                         child: Text(
                           conseil.anecdote!,
                           style: AppTextStyles.body,
+                          maxLines: 2, // Limiter à deux lignes
+                          overflow: TextOverflow.ellipsis, // Ajouter des points de suspension
                         ),
                       ),
                     ],

@@ -31,16 +31,40 @@ class PubliciteCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (publicite.imageUrl != null)
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Image.network(
-                  publicite.imageUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const ColoredBox(
-                    color: Colors.black12,
-                    child: Center(child: Icon(Icons.image_not_supported)),
+              Stack(
+                children: [
+                  AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Image.network(
+                      publicite.imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const ColoredBox(
+                        color: Colors.black12,
+                        child: Center(child: Icon(Icons.image_not_supported)),
+                      ),
+                    ),
                   ),
-                ),
+                  if (isNew)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.lightGreen, // Couleur pour l'étiquette "Nouveau"
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'Nouveau',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             Padding(
               padding: const EdgeInsets.all(16),
@@ -58,22 +82,6 @@ class PubliciteCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (isNew)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.red, // Couleur pour l'étiquette "Nouveau"
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            'Nouveau',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -83,6 +91,7 @@ class PubliciteCard extends StatelessWidget {
                     maxLines: 1, // Tronquer le contenu à une ligne
                     overflow: TextOverflow.ellipsis,
                   ),
+
                   if (publicite.createdAt != null) ...[
                     const SizedBox(height: 8),
                     Text(

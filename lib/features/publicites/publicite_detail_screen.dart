@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart'; // Import pour lancer les URLs
 
 import '../../config/app_colors.dart';
 import '../../config/app_text_styles.dart';
@@ -15,34 +16,52 @@ class PubliciteDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Espace pub'),
       ),
-      body: SizedBox(
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            _HeroBanner(publicite: publicite),
-            const SizedBox(height: 24),
-            Text(publicite.content,
-                style: AppTextStyles.body.copyWith(fontSize: 18)),
-            const SizedBox(height: 24),
-            _InfoTile(
-              icon: Icons.public,
-              label: 'Lien cible',
-              value: publicite.targetUrl ?? 'Bientôt disponible',
-            ),
-            _InfoTile(
-              icon: Icons.check_circle_outline,
-              label: 'Statut',
-              value: publicite.isActive ? 'Active' : 'Inactive',
-            ),
-            if (publicite.createdAt != null)
-              _InfoTile(
-                icon: Icons.calendar_today_outlined,
-                label: 'Publié le',
-                value: MaterialLocalizations.of(context)
-                    .formatMediumDate(publicite.createdAt!.toLocal()),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        children: [
+          _HeroBanner(publicite: publicite),
+          const SizedBox(height: 24),
+          Text(publicite.content,
+              style: AppTextStyles.body.copyWith(fontSize: 18)),
+          const SizedBox(height: 24),
+          // Bouton "Détails complets" qui ouvre le targetUrl
+          if (publicite.targetUrl != null && publicite.targetUrl!.isNotEmpty)
+            ElevatedButton.icon(
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Détails complets'),
+              onPressed: () async {
+                final uri = Uri.parse(publicite.targetUrl!);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri);
+                } else {
+                  // Afficher une erreur si l'URL ne peut pas être lancée
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Impossible d\'ouvrir le lien: ${publicite.targetUrl}'),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.chocolat, // Utiliser la couleur chocolat
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
-          ],
-        ),
+            ),
+          const SizedBox(height: 24), // Espacement après le bouton
+          // Affichage de la date de publication
+          if (publicite.createdAt != null)
+            _InfoTile(
+              icon: Icons.calendar_today_outlined,
+              label: 'Publié le',
+              value: MaterialLocalizations.of(context)
+                  .formatMediumDate(publicite.createdAt!.toLocal()),
+            ),
+          // Le statut isActive n'est plus affiché
+        ],
       ),
     );
   }

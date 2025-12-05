@@ -37,6 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   final PageController _carouselController =
       PageController(viewportFraction: 0.9);
+  final TextEditingController _publiciteSearchController = TextEditingController();
+  Map<String, dynamic> _publiciteFilters = {'order': 'latest', 'status': 'active'};
 
   int _index = 0;
   bool _loadingConseils = false;
@@ -68,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _favoritesManager.removeListener(_handleFavoritesChanged);
     _conseilsScrollController.dispose();
     _searchController.dispose();
+    _publiciteSearchController.dispose(); // Dispose du nouveau controller
     _carouselController.dispose();
     _carouselTimer?.cancel();
     super.dispose();
@@ -123,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _fetchPublicites() async {
+  Future<void> _fetchPublicites({bool reset = true}) async {
     if (mounted) {
       setState(() {
         _loadingPublicites = true;
@@ -132,7 +135,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     try {
-      final publicites = await _publiciteService.fetchPublicites(limit: 15);
+      final publicites = await _publiciteService.fetchPublicites(
+        limit: 15,
+        // Ajout des filtres ici pour les publicités
+        search: _publiciteFilters['search'] as String?,
+        order: _publiciteFilters['order'] as String?,
+        status: _publiciteFilters['status'] as String?,
+      );
       if (!mounted) return;
       setState(() {
         _publicites = publicites;
@@ -330,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppColors.chocolat,
         icon: const Icon(Icons.add_circle_outline, color: Colors.white),
         label: const Text(
-          'Partager un conseil',
+          'Conseiller',
           style: TextStyle(color: Colors.white),
         ),
       ),
@@ -583,10 +592,49 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         _buildCarouselSection(context),
         const SizedBox(height: 16),
+        _buildStatsSection(), // Nouvelle section pour les stats
+        const SizedBox(height: 16),
         _buildQuickActionsSection(context),
         const SizedBox(height: 8),
         const Divider(),
         const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  Widget _buildStatsSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildStatItem(
+            icon: Icons.lightbulb_outline,
+            label: 'Conseils',
+            value: _conseils.length, // Utiliser le nombre de conseils chargés
+          ),
+          _buildStatItem(
+            icon: Icons.campaign_outlined,
+            label: 'Publicités',
+            value: _publicites.length, // Utiliser le nombre de publicités chargées
+          ),
+          // Vous pouvez ajouter d'autres statistiques ici si disponibles
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem({
+    required IconData icon,
+    required String label,
+    required int value,
+  }) {
+    return Column(
+      children: [
+        Icon(icon, size: 28, color: AppColors.chocolat),
+        const SizedBox(height: 4),
+        Text('$value', style: AppTextStyles.title.copyWith(fontSize: 18)),
+        Text(label, style: AppTextStyles.small),
       ],
     );
   }
@@ -856,19 +904,90 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return RefreshIndicator(
       onRefresh: _fetchPublicites,
-      child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(bottom: 120, top: 16),
-        itemCount: _publicites.length,
-        itemBuilder: (context, index) {
-          final pub = _publicites[index];
-          return PubliciteCard(
-            publicite: pub,
-            onTap: () => _openPubliciteDetail(pub),
-          );
-        },
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _publiciteSearchController,
+                  onSubmitted: (_) => _applyPubliciteSearch(),
+                  decoration: InputDecoration(
+                    hintText: 'Rechercher des publicités...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _publiciteSearchController.clear();
+                        _applyPubliciteSearch();
+                      },
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: (_publiciteFilters['order'] as String?) ?? 'latest',
+                  decoration: InputDecoration(
+                    labelText: 'Tri des publicités',
+                    prefixIcon: const Icon(Icons.sort_rounded),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'latest',
+                      child: Text('Les plus récentes'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'oldest',
+                      child: Text('Les plus anciennes'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value == null) return;
+                    setState(() {
+                      _publiciteFilters = {..._publiciteFilters, 'order': value};
+                    });
+                    _fetchPublicites();
+                  },
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: 120, top: 0),
+              itemCount: _publicites.length,
+              itemBuilder: (context, index) {
+                final pub = _publicites[index];
+                return PubliciteCard(
+                  publicite: pub,
+                  onTap: () => _openPubliciteDetail(pub),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  void _applyPubliciteSearch() {
+    setState(() {
+      _publiciteFilters = {
+        ..._publiciteFilters,
+        'search': _publiciteSearchController.text.trim().isEmpty
+            ? null
+            : _publiciteSearchController.text.trim(),
+      };
+    });
+    _fetchPublicites();
   }
 
   Widget _buildPlaceholder({required String title, required String message}) {
