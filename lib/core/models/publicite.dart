@@ -27,6 +27,7 @@ class Publicite {
 
   factory Publicite.fromJson(Map<String, dynamic> json) {
     String? relativeImageUrl = json['image_url'] as String?;
+    print('Publicite.fromJson - relativeImageUrl: $relativeImageUrl'); // Nouveau print
     String? fullImageUrl;
 
     if (relativeImageUrl != null && relativeImageUrl.isNotEmpty) {
@@ -34,7 +35,6 @@ class Publicite {
       String cleanPath = relativeImageUrl.startsWith('public/')
           ? relativeImageUrl.substring('public/'.length)
           : relativeImageUrl;
-      // Note: J'utilise l'IP directement ici car ApiConfig n'est pas encore importé
       fullImageUrl = ApiConfig.baseImageUrl + cleanPath;
     }
 
