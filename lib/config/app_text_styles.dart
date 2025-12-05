@@ -22,4 +22,9 @@ class AppTextStyles {
     color: AppColors.textSecondary,
     fontSize: 12,
   );
+
+  static final TextStyle bodySmall = GoogleFonts.delius(
+    color: AppColors.textSecondary,
+    fontSize: 12,
+  );
 }

@@ -27,7 +27,6 @@ class Publicite {
 
   factory Publicite.fromJson(Map<String, dynamic> json) {
     String? relativeImageUrl = json['image_url'] as String?;
-    print('Publicite.fromJson - relativeImageUrl: $relativeImageUrl'); // Nouveau print
     String? fullImageUrl;
 
     if (relativeImageUrl != null && relativeImageUrl.isNotEmpty) {
