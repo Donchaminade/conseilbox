@@ -8,9 +8,10 @@ class SupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final contacts = [
-      ('Email', 'hello@conseilbox.com'),
-      ('WhatsApp', '+228 91 00 00 00'),
-      ('Telegram', '@ConseilBox'),
+      ('Email ADC Le_Meneur', 'chaminade.dondah.adjolou@gmail.com'),
+      ('Email Irokou', 'ireneamedji@gmail.com'),
+      ('WhatsApp', '+228 92 59 56 61'),
+      ('Linkedin', '@chaminadeadjolou'),
     ];
 
     final faqs = [

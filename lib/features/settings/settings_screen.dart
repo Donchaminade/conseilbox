@@ -28,7 +28,7 @@ class SettingsScreen extends StatelessWidget {
       _SettingItem(
         icon: Icons.design_services_outlined,
         title: 'Demander un service',
-        subtitle: 'Coaching, workshops, interventions',
+        subtitle: 'Coaching, workshops, interventions, Gestion, Conception',
         builder: (_) => const ServiceRequestScreen(),
       ),
       _SettingItem(

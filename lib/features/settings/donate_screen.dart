@@ -40,9 +40,9 @@ class DonateScreen extends StatelessWidget {
                 children: [
                   Text('Formules suggerees'),
                   SizedBox(height: 8),
-                  Text('• 5€ : offrir un cafe a l’equipe'),
-                  Text('• 15€ : soutenir une interview'),
-                  Text('• 50€ : sponsoriser une capsule video'),
+                  Text('• 1000 Fcfa : offrir un cafe a l’equipe'),
+                  Text('• 5000 Fcfa : soutenir notre initiative'),
+                  Text('• 10.000 Fcfa : Devenir Sponsor du projet, Proposer des ameliorations et biens plus'),
                 ],
               ),
             ),
