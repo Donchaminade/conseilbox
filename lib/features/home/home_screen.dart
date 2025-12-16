@@ -44,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
       TextEditingController();
   final PageController _infoCarouselController = PageController();
   int _infoCarouselIndex = 0;
+  Timer? _infoCarouselTimer;
   Map<String, dynamic> _publiciteFilters = {
     'order': 'latest',
     'status': 'active'
@@ -84,6 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _publiciteSearchController.dispose(); // Dispose du nouveau controller
     _carouselController.dispose();
     _carouselTimer?.cancel();
+    _infoCarouselTimer?.cancel();
     super.dispose();
   }
 
@@ -179,7 +181,8 @@ class _HomeScreenState extends State<HomeScreen> {
             error is ApiException ? error.message : error.toString();
       });
     } finally {
-      _scheduleCarouselTimer();
+_scheduleCarouselTimer();
+    _scheduleInfoCarouselTimer();
       if (mounted) {
         if (reset) {
           setState(() => _loadingPublicites = false);
@@ -218,15 +221,39 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _scheduleCarouselTimer() {
-    final length =
-        _publicites.isEmpty ? _defaultCarouselItems.length : _publicites.length;
-    if (_carouselIndex >= length) {
-      _carouselIndex = 0;
-    }
-    _restartCarouselTimer(itemCount: length);
-  }
-
+          void _scheduleCarouselTimer() {
+            final length =
+                _publicites.isEmpty ? _defaultCarouselItems.length : _publicites.length;
+            if (_carouselIndex >= length) {
+              _carouselIndex = 0;
+            }
+            _restartCarouselTimer(itemCount: length);
+          }
+  
+          void _restartInfoCarouselTimer({required int itemCount}) {
+            _infoCarouselTimer?.cancel();
+            if (itemCount < 2) {
+              return;
+            }
+  
+            _infoCarouselTimer = Timer.periodic(const Duration(seconds: 7), (_) { // Slower scroll for info carousel
+              if (!_infoCarouselController.hasClients) return;
+              final nextPage = (_infoCarouselIndex + 1) % itemCount;
+              _infoCarouselController.animateToPage(
+                nextPage,
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+              );
+            });
+          }
+  
+          void _scheduleInfoCarouselTimer() {
+            final length = _infoCarouselItems.length;
+            if (_infoCarouselIndex >= length) {
+              _infoCarouselIndex = 0;
+            }
+            _restartInfoCarouselTimer(itemCount: length);
+          }
   void _toggleFavorite(Conseil conseil) {
     context.read<FavoritesManager>().toggle(conseil);
     final isNowFavorite = context.read<FavoritesManager>().isFavorite(conseil);
@@ -1048,10 +1075,10 @@ class _HomeScreenState extends State<HomeScreen> {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Card(
-                  elevation: 2,
+                  elevation: 4, // Increased elevation
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  color: AppColors.chocolat.withAlpha(50),
+                      borderRadius: BorderRadius.circular(20)), // Increased border radius
+                  color: AppColors.chocolat.withOpacity(0.15), // Adjusted opacity
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -1061,12 +1088,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(
                           item.title,
                           style: AppTextStyles.title.copyWith(
-                              fontSize: 16, color: AppColors.chocolat),
+                              fontSize: 18, color: AppColors.chocolat), // Larger font size for title
                         ),
                         const SizedBox(height: 8),
                         Text(
                           item.content,
-                          style: AppTextStyles.body.copyWith(fontSize: 14),
+                          style: AppTextStyles.body.copyWith(
+                              fontSize: 14, color: AppColors.chocolat.withOpacity(0.8)), // Darker content text
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1173,5 +1201,25 @@ const List<_InfoCarouselItem> _infoCarouselItems = [
     title: 'Découvrez & Grandissez',
     content:
         'Explorez les conseils des autres, sauvegardez vos favoris et continuez d\'apprendre.',
+  ),
+  _InfoCarouselItem(
+    title: 'Restez Inspiré',
+    content: 'Chaque jour, de nouveaux conseils pour booster votre créativité et votre productivité.',
+  ),
+  _InfoCarouselItem(
+    title: 'Contribuez à la Communauté',
+    content: 'Vos expériences sont précieuses. Partagez-les pour enrichir notre base de connaissances.',
+  ),
+  _InfoCarouselItem(
+    title: 'Vos Favoris, Toujours à Portée',
+    content: 'Enregistrez les conseils qui vous parlent le plus pour les retrouver facilement.',
+  ),
+  _InfoCarouselItem(
+    title: 'Actualités & Publicités',
+    content: 'Restez informé des dernières tendances et découvrez des opportunités via nos publicités.',
+  ),
+  _InfoCarouselItem(
+    title: 'Sécurité et Confidentialité',
+    content: 'Vos données sont protégées. ConseilBox s\'engage pour la sécurité de ses utilisateurs.',
   ),
 ];
