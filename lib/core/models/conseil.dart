@@ -31,7 +31,7 @@ class Conseil {
 
   factory Conseil.fromJson(Map<String, dynamic> json) {
     return Conseil(
-      id: json['id'] as String,
+      id: json['id'].toString(),
       title: json['title'] as String? ?? '',
       content: json['content'] as String? ?? '',
       anecdote: json['anecdote'] as String?,

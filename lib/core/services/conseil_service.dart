@@ -77,14 +77,9 @@ class ConseilService {
     );
 
     final data = response.data;
+    // The API now returns the full created object.
     if (data is Map<String, dynamic>) {
-      // The create API returns a message and id, not the full Conseil object
-      // We might need to fetch the full conseil after creation or adjust this.
-      // For now, let's assume it returns at least the ID so we can create a dummy Conseil.
-      // Or, better, refetch the conseil.
-      if (data.containsKey('id')) {
-        return fetchSingleConseil(data['id'].toString());
-      }
+      return Conseil.fromJson(data);
     }
 
     throw ApiException(message: 'Réponse inattendue lors de la création');

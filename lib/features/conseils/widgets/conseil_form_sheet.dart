@@ -90,7 +90,8 @@ class _ConseilFormSheetState extends State<ConseilFormSheet> {
             _buildHeader(context),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 22),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 26, vertical: 22),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -104,7 +105,6 @@ class _ConseilFormSheetState extends State<ConseilFormSheet> {
                         validator: _required,
                       ),
                       const SizedBox(height: 16),
-
                       _buildInput(
                         controller: _contentController,
                         label: "Contenu du conseil",
@@ -113,17 +113,14 @@ class _ConseilFormSheetState extends State<ConseilFormSheet> {
                         validator: _required,
                       ),
                       const SizedBox(height: 14),
-
                       _buildInput(
                         controller: _anecdoteController,
                         label: "Anecdote ou contexte (optionnel)",
                         prefix: Icons.lightbulb_outline,
                         maxLines: 4,
                       ),
-
                       const SizedBox(height: 28),
                       _sectionTitle("À propos de l'auteur"),
-
                       _buildInput(
                         controller: _authorController,
                         label: "Nom ou pseudonyme",
@@ -131,16 +128,13 @@ class _ConseilFormSheetState extends State<ConseilFormSheet> {
                         validator: _required,
                       ),
                       const SizedBox(height: 16),
-
                       _buildInput(
                         controller: _locationController,
                         label: "Localisation (ville, pays)",
                         prefix: Icons.location_on_outlined,
                       ),
-
                       const SizedBox(height: 28),
                       _sectionTitle("Liens sociaux (optionnels)"),
-
                       _buildInput(
                         controller: _social1Controller,
                         label: "Profil social #1",
@@ -148,7 +142,6 @@ class _ConseilFormSheetState extends State<ConseilFormSheet> {
                         keyboard: TextInputType.url,
                       ),
                       const SizedBox(height: 14),
-
                       _buildInput(
                         controller: _social2Controller,
                         label: "Profil social #2",
@@ -156,14 +149,12 @@ class _ConseilFormSheetState extends State<ConseilFormSheet> {
                         keyboard: TextInputType.url,
                       ),
                       const SizedBox(height: 14),
-
                       _buildInput(
                         controller: _social3Controller,
                         label: "Profil social #3",
                         prefix: Icons.link,
                         keyboard: TextInputType.url,
                       ),
-
                       if (_error != null) ...[
                         const SizedBox(height: 20),
                         Container(
@@ -181,7 +172,6 @@ class _ConseilFormSheetState extends State<ConseilFormSheet> {
                           ),
                         )
                       ],
-
                       const SizedBox(height: 30),
                       _buildSubmitButton(),
                     ],
@@ -199,7 +189,10 @@ class _ConseilFormSheetState extends State<ConseilFormSheet> {
   Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 44), // Padding du contenu du header (encore plus augmenté le vertical)
+      padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical:
+              44), // Padding du contenu du header (encore plus augmenté le vertical)
       decoration: const BoxDecoration(
         color: AppColors.chocolat,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -209,18 +202,22 @@ class _ConseilFormSheetState extends State<ConseilFormSheet> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Partager un  conseil",
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+              Center(
+                child: Text(
+                  "Partager un  conseil",
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                "Contribuez à la communauté.",
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.white70,
+              Center(
+                child: Text(
+                  "Contribuez à la communauté.",
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white70,
+                      ),
                 ),
               ),
             ],
@@ -232,8 +229,10 @@ class _ConseilFormSheetState extends State<ConseilFormSheet> {
               onPressed: () => Navigator.of(context).maybePop(),
               icon: const Icon(Icons.close),
               color: Colors.white, // Icône de fermeture blanche
-              padding: const EdgeInsets.all(0), // Supprimer le padding par défaut de l'IconButton
-              constraints: const BoxConstraints(), // Supprimer les contraintes de taille par défaut
+              padding: const EdgeInsets.all(
+                  0), // Supprimer le padding par défaut de l'IconButton
+              constraints:
+                  const BoxConstraints(), // Supprimer les contraintes de taille par défaut
             ),
           ),
         ],
@@ -261,11 +260,13 @@ class _ConseilFormSheetState extends State<ConseilFormSheet> {
         prefixIcon: Icon(prefix, color: AppColors.chocolat.withOpacity(0.6)),
         filled: true,
         fillColor: const Color(0xFFFFF8F3), // crème doux
-        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
         // Bordure par défaut (non focus, non erreur)
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: AppColors.chocolat.withOpacity(0.4), width: 1.0),
+          borderSide: BorderSide(
+              color: AppColors.chocolat.withOpacity(0.4), width: 1.0),
         ),
         // Bordure quand le champ est focus
         focusedBorder: OutlineInputBorder(
@@ -319,7 +320,8 @@ class _ConseilFormSheetState extends State<ConseilFormSheet> {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.chocolat,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           elevation: 3,
         ),
       ),

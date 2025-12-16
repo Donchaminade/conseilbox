@@ -288,14 +288,14 @@ class _HomeScreenState extends State<HomeScreen> {
               _mySuggestions.insert(0, created);
             });
       
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Conseil soumis ! Il apparaîtra après validation.',
-                ),
-              ),
-            );
-          }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Conseil soumis ! Il apparaîtra après validation.',
+                      ),
+                    ),
+                  );
+                  _openSuggestions();          }
         }
       
         void _applySearch() {

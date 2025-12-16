@@ -137,7 +137,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
 
     if ($stmt->execute()) {
-        sendResponse(['message' => 'Conseil created successfully.', 'id' => $conn->lastInsertId()], 201);
+        $lastId = $conn->lastInsertId();
+        
+        // Fetch the newly created conseil to return it
+        $query = "SELECT id, title, content, anecdote, author, location, status, social_link_1, social_link_2, social_link_3, created_at, updated_at FROM conseils WHERE id = :id";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':id', $lastId);
+        $stmt->execute();
+        $newConseil = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($newConseil) {
+            sendResponse($newConseil, 201);
+        } else {
+            // This case should ideally not happen if the insert was successful
+            sendResponse(['message' => 'Conseil created but could not be retrieved.', 'id' => $lastId], 207);
+        }
+
     } else {
         sendError('Failed to create conseil.', 503);
     }
