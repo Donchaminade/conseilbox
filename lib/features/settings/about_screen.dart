@@ -10,7 +10,7 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final socials = [
-      (Icons.business_center, 'LinkedIn', 'https://example.com'),
+      (Icons.business_center, 'LinkedIn', 'https://www.linkedin.com/in/ireneamedji/'),
       (Icons.play_circle_outline, 'YouTube', 'https://example.com'),
       (Icons.menu_book_outlined, 'Medium', 'https://example.com'),
       (Icons.camera_alt_outlined, 'Instagram', 'https://example.com'),

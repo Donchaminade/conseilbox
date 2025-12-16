@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/managers/favorites_manager.dart';
 import '../../core/models/conseil.dart';

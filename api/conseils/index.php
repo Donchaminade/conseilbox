@@ -5,7 +5,7 @@ include_once __DIR__ . '/../utils.php';
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Pagination
     $page = isset($_GET['page']) && is_numeric($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-    $limit = isset($_GET['limit']) && is_numeric($_GET['limit']) ? max(1, (int)$_GET['limit']) : 10;
+    $limit = isset($_GET['limit']) && is_numeric($_GET['limit']) ? (int)$_GET['limit'] : 10;
     $offset = ($page - 1) * $limit;
 
     // Sorting
@@ -55,7 +55,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $query .= " ORDER BY " . $sortBy . " " . $order;
     }
     
-    $query .= " LIMIT :limit OFFSET :offset";
+    if ($limit > 0) {
+        $query .= " LIMIT :limit OFFSET :offset";
+    }
 
     $stmt = $conn->prepare($query);
 
@@ -63,8 +65,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     foreach ($bindParams as $param => $value) {
         $stmt->bindValue($param, $value);
     }
-    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    if ($limit > 0) {
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    }
 
     $stmt->execute();
     $conseils = $stmt->fetchAll(PDO::FETCH_ASSOC);
