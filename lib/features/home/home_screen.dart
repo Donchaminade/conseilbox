@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:conseilbox/core/network/api_exception.dart';
 import 'package:conseilbox/features/conseils/conseil_detail_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Ajouté pour SystemNavigator.pop()
 import 'package:share_plus/share_plus.dart';
 
 import '../../config/app_colors.dart';
@@ -306,9 +307,37 @@ class _HomeScreenState extends State<HomeScreen> {
       
         @override
         Widget build(BuildContext context) {
-          return Scaffold(
-            extendBody: true,
-            appBar: AppBar(
+          return PopScope(
+            canPop: false, // Empêche l'application de se fermer immédiatement
+            onPopInvoked: (bool didPop) {
+              if (didPop) return;
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Quitter l\'application ?'),
+                    content: const Text('Voulez-vous vraiment quitter ConseilBox ?'),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text('Non'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text('Oui'),
+                      ),
+                    ],
+                  );
+                },
+              ).then((value) {
+                if (value == true) {
+                  SystemNavigator.pop();
+                }
+              });
+            },
+            child: Scaffold(
+              extendBody: true,
+              appBar: AppBar(
               title: const Text('ConseilBox'),
               actions: [
                 IconButton(
@@ -352,7 +381,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(color: Colors.white),
               ),
             ),
+          )
           );
+
         }
       
         Widget _buildConseilsFeed({bool includeHeader = true}) {

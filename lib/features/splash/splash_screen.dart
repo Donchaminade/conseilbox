@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:conseilbox/config/app_colors.dart';
+import 'package:conseilbox/features/home/home_screen.dart'; // Import pour HomeScreen
 import 'package:conseilbox/features/login/login_screen.dart';
 import 'package:conseilbox/shared/widgets/bgstyle.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import pour SharedPreferences
+import 'package:conseilbox/utils/constants.dart'; // Import pour Constants
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -40,13 +43,26 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    Timer(const Duration(seconds: 5), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
-      }
-    });
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    await Future.delayed(const Duration(seconds: 5)); // Keep splash screen visible for animation
+
+    if (!mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final String? authToken = prefs.getString(Constants.authTokenKey);
+
+    if (authToken == Constants.correctLoginCode) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    }
   }
 
   @override

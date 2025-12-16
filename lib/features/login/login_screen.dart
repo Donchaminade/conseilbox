@@ -3,7 +3,9 @@ import 'package:conseilbox/shared/widgets/status_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:conseilbox/features/home/home_screen.dart';
 import 'package:conseilbox/config/app_colors.dart';
-import 'package:conseilbox/shared/widgets/bgstyle.dart'; // Import GeometricBackground
+import 'package:conseilbox/shared/widgets/bgstyle.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:conseilbox/utils/constants.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -50,6 +52,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (_codeController.text == _correctCode) {
       if (mounted) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(Constants.authTokenKey, _correctCode);
+
         await showStatusPopup(
             context, PopupStatus.success, "Connexion réussie !");
         Navigator.of(context).pushReplacement(
