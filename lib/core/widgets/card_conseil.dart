@@ -211,6 +211,26 @@ class CardConseil extends StatelessWidget {
                   ),
                 ),
               ),
+            if (isFavorite) // Added new Positioned widget for favorite badge
+              Positioned(
+                top: 0,
+                left: 0, // Positioned on the top-left
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.chocolat.withOpacity(0.8), // Same color for consistency
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20), // Top-left corner
+                      bottomRight: Radius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    '🎀',
+                    style: TextStyle(fontSize: 22),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
