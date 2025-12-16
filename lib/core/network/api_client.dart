@@ -33,12 +33,14 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? queryParameters,
     Object? data,
+    Options? options, // Added options parameter
   }) =>
       _request(
         path,
         method: 'POST',
         queryParameters: queryParameters,
         data: data,
+        options: options, // Pass options to _request
       );
 
   Future<Response<dynamic>> _request(
@@ -46,19 +48,35 @@ class ApiClient {
     required String method,
     Map<String, dynamic>? queryParameters,
     Object? data,
+    Options? options, // Added options parameter
   }) async {
     try {
+      print('API Request: $method ${_dio.options.baseUrl}$path');
+      if (queryParameters != null && queryParameters.isNotEmpty) {
+        print('Query Parameters: $queryParameters');
+      }
+      if (data != null) {
+        print('Request Data: $data');
+      }
+
       final response = await _dio.request<dynamic>(
         path,
         data: data,
         queryParameters: queryParameters,
-        options: Options(method: method),
+        options: options?.copyWith(method: method) ??
+            Options(method: method), // Merge options
       );
+
+      print(
+          'API Response for $path (Status: ${response.statusCode}): ${response.data}'); // Log full response
 
       final status = response.statusCode ?? 500;
       if (status >= 200 && status < 300) {
         return response;
       }
+
+      print(
+          'API Error for $path (Status: $status): ${response.data}'); // Log error response
 
       throw ApiException(
         message: _extractMessage(response.data) ?? 'Erreur inattendue',
@@ -68,6 +86,12 @@ class ApiClient {
     } on DioException catch (error) {
       final response = error.response;
       final status = response?.statusCode;
+
+      print('DioException caught for $path: ${error.message}');
+      if (response != null) {
+        print('DioException Response Data: ${response.data}');
+        print('DioException Status Code: ${response.statusCode}');
+      }
 
       throw ApiException(
         message: _extractMessage(response?.data) ??

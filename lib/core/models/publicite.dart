@@ -14,7 +14,7 @@ class Publicite {
     this.updatedAt, // Ajouté
   });
 
-  final int id;
+  final String id; // Changed from int to String
   final String title;
   final String content;
   final String? imageUrl;
@@ -30,20 +30,20 @@ class Publicite {
     String? fullImageUrl;
 
     if (relativeImageUrl != null && relativeImageUrl.isNotEmpty) {
-      // Supprimer 'public/' si présent, puis ajouter la base URL
-      String cleanPath = relativeImageUrl.startsWith('public/')
-          ? relativeImageUrl.substring('public/'.length)
+      // Supprimer 'publicites/' si présent, puis ajouter la base URL
+      String cleanPath = relativeImageUrl.startsWith('publicites/')
+          ? relativeImageUrl.substring('publicites/'.length)
           : relativeImageUrl;
       fullImageUrl = ApiConfig.baseImageUrl + cleanPath;
     }
 
     return Publicite(
-      id: json['id'] as int,
+      id: json['id'].toString(), // Safely convert to String
       title: json['title'] as String? ?? '',
       content: json['content'] as String? ?? '',
       imageUrl: fullImageUrl, // Utilisez l'URL complète ici
       targetUrl: json['target_url'] as String?,
-      isActive: (json['is_active'] as bool?) ?? false,
+      isActive: (json['is_active'] as int?) == 1,
       startDate: _parseDate(json['start_date']), // Ajouté
       endDate: _parseDate(json['end_date']), // Ajouté
       createdAt: _parseDate(json['created_at']),

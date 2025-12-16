@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/conseil.dart';
 
 class FavoritesManager extends ChangeNotifier {
-  final Map<int, Conseil> _favorites = {};
+  final Map<String, Conseil> _favorites = {};
 
   List<Conseil> get items => _favorites.values.toList(growable: false);
 

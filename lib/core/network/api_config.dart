@@ -20,11 +20,11 @@ class ApiConfig {
     }
 
     // Hardcode the local network IP for reliable debugging across devices.
-    return 'https://conseilbox-api.grosbit.com/api';
+    return 'https://grosbit.com/conseilbox/api/';
   }
 
   // Ajouté pour la base URL des images
   static String get baseImageUrl {
-    return 'https://conseilbox-api.grosbit.com/storage/';
+    return 'https://grosbit.com/conseilbox/publicites/';
   }
 }

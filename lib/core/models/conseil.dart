@@ -7,19 +7,23 @@ class Conseil {
     required this.author,
     this.location,
     required this.status,
-    required this.socialLinks,
+    this.socialLink1,
+    this.socialLink2,
+    this.socialLink3,
     this.createdAt,
     this.updatedAt,
   });
 
-  final int id;
+  final String id;
   final String title;
   final String content;
   final String? anecdote;
   final String author;
   final String? location;
   final String status;
-  final List<String> socialLinks;
+  final String? socialLink1;
+  final String? socialLink2;
+  final String? socialLink3;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -27,16 +31,16 @@ class Conseil {
 
   factory Conseil.fromJson(Map<String, dynamic> json) {
     return Conseil(
-      id: json['id'] as int,
+      id: json['id'] as String,
       title: json['title'] as String? ?? '',
       content: json['content'] as String? ?? '',
       anecdote: json['anecdote'] as String?,
       author: json['author'] as String? ?? 'Anonyme',
       location: json['location'] as String?,
       status: json['status'] as String? ?? 'pending',
-      socialLinks: (json['social_links'] as List<dynamic>? ?? [])
-          .map((link) => link.toString())
-          .toList(),
+      socialLink1: json['social_link_1'] as String?,
+      socialLink2: json['social_link_2'] as String?,
+      socialLink3: json['social_link_3'] as String?,
       createdAt: _parseDate(json['created_at']),
       updatedAt: _parseDate(json['updated_at']),
     );

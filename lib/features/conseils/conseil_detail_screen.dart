@@ -20,7 +20,11 @@ class ConseilDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final isFavorite = favorites.isFavorite(conseil);
     final date = conseil.createdAt;
-    final socialLinks = conseil.socialLinks;
+    final List<String> socialLinks = [
+      conseil.socialLink1,
+      conseil.socialLink2,
+      conseil.socialLink3,
+    ].whereType<String>().where((link) => link.isNotEmpty).toList();
     final chips = <Widget>[
       if (date != null)
         _DetailChip(

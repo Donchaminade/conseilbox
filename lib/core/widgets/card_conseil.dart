@@ -31,7 +31,12 @@ class CardConseil extends StatelessWidget {
         conseil.location?.isNotEmpty == true ? conseil.location : null;
     final initials = conseil.author.trim();
 
-    final socialCount = conseil.socialLinks.length;
+    final socialLinks = [
+      conseil.socialLink1,
+      conseil.socialLink2,
+      conseil.socialLink3,
+    ].whereType<String>().where((link) => link.isNotEmpty).toList();
+    final socialCount = socialLinks.length;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),

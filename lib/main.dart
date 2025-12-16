@@ -1,5 +1,6 @@
 import 'package:conseilbox/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
+
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 
@@ -7,6 +8,8 @@ import 'config/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Enable verbose network image logging
+
   await initializeDateFormatting('fr_FR');
   Intl.defaultLocale = 'fr_FR';
   runApp(const ConseilBoxApp());
