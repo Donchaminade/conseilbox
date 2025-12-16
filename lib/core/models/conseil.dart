@@ -27,6 +27,13 @@ class Conseil {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
+  bool get isNew {
+    if (createdAt == null) return false;
+    final now = DateTime.now();
+    final difference = now.difference(createdAt!);
+    return difference.inDays < 3;
+  }
+
   bool get isPublished => status == 'published';
 
   factory Conseil.fromJson(Map<String, dynamic> json) {

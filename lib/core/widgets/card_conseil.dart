@@ -45,144 +45,173 @@ class CardConseil extends StatelessWidget {
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              colors: [
-                AppColors.blanc,
-                AppColors.chocolat.withValues(alpha: 0.03),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            border:
-                Border.all(color: AppColors.chocolat.withValues(alpha: 0.08)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.chocolat.withValues(alpha: 0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: AppColors.chocolat.withValues(alpha: 0.15),
-                    foregroundColor: AppColors.chocolat,
-                    radius: 24,
-                    child: Text(
-                      initials.isNotEmpty ? initials[0].toUpperCase() : '?',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+        child: Stack(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.blanc,
+                    AppColors.chocolat.withValues(alpha: 0.03),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                    color: AppColors.chocolat.withValues(alpha: 0.08)),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.chocolat.withValues(alpha: 0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(conseil.title,
-                            style: AppTextStyles.title.copyWith(fontSize: 20)),
-                        const SizedBox(height: 4),
-                        Row(
+                ],
+              ),
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor:
+                            AppColors.chocolat.withValues(alpha: 0.15),
+                        foregroundColor: AppColors.chocolat,
+                        radius: 24,
+                        child: Text(
+                          initials.isNotEmpty ? initials[0].toUpperCase() : '?',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.person_outline,
-                                size: 16, color: AppColors.chocolat),
-                            const SizedBox(width: 4),
-                            Text(
-                              conseil.author,
-                              style: AppTextStyles.small,
+                            Text(conseil.title,
+                                style:
+                                    AppTextStyles.title.copyWith(fontSize: 20)),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(Icons.person_outline,
+                                    size: 16, color: AppColors.chocolat),
+                                const SizedBox(width: 4),
+                                Text(
+                                  conseil.author,
+                                  style: AppTextStyles.small,
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.share_outlined),
-                    onPressed: onShare,
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? AppColors.chocolat : null,
-                    ),
-                    onPressed: onFavorite,
-                  ),
-                ],
-              ),
-              if (!conseil.isPublished) ...[
-                const SizedBox(height: 8),
-                Chip(
-                  label: const Text('En attente'),
-                  backgroundColor: AppColors.chocolat.withValues(alpha: 0.1),
-                  labelStyle:
-                      AppTextStyles.label.copyWith(color: AppColors.chocolat),
-                ),
-              ],
-              const SizedBox(height: 12),
-              Text(
-                conseil.content,
-                style: AppTextStyles.body.copyWith(fontSize: 16),
-                maxLines: 2, // Réduit à une ligne
-                overflow: TextOverflow.ellipsis, // Ajouter des points de suspension
-              ),
-              if (conseil.anecdote?.isNotEmpty == true) ...[
-                const SizedBox(height: 12),
-                
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.chocolat.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.auto_awesome, color: AppColors.chocolat),
-                      const SizedBox(width: 8),
-                      
-                      Expanded(
-                        child: Text(
-                          conseil.anecdote!,
-                          style: AppTextStyles.body,
-                          maxLines: 2, // Limiter à deux lignes
-                          overflow: TextOverflow.ellipsis, // Ajouter des points de suspension
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.share_outlined),
+                        onPressed: onShare,
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                          color: isFavorite ? AppColors.chocolat : null,
                         ),
+                        onPressed: onFavorite,
                       ),
                     ],
                   ),
-                ),
-              ],
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (location != null)
-                    _MetaChip(
-                      icon: Icons.place_outlined,
-                      label: location,
+                  if (!conseil.isPublished) ...[
+                    const SizedBox(height: 8),
+                    Chip(
+                      label: const Text('En attente'),
+                      backgroundColor:
+                          AppColors.chocolat.withValues(alpha: 0.1),
+                      labelStyle: AppTextStyles.label
+                          .copyWith(color: AppColors.chocolat),
                     ),
-                  _MetaChip(
-                    icon: Icons.calendar_today_outlined,
-                    label: formattedDate,
+                  ],
+                  const SizedBox(height: 12),
+                  Text(
+                    conseil.content,
+                    style: AppTextStyles.body.copyWith(fontSize: 16),
+                    maxLines: 2, // Réduit à une ligne
+                    overflow:
+                        TextOverflow.ellipsis, // Ajouter des points de suspension
                   ),
-                  if (socialCount > 0)
-                    _MetaChip(
-                      icon: Icons.link,
-                      label: '$socialCount lien${socialCount > 1 ? 's' : ''}',
+                  if (conseil.anecdote?.isNotEmpty == true) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.chocolat.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.auto_awesome,
+                              color: AppColors.chocolat),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              conseil.anecdote!,
+                              style: AppTextStyles.body,
+                              maxLines: 2, // Limiter à deux lignes
+                              overflow: TextOverflow
+                                  .ellipsis, // Ajouter des points de suspension
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                  ],
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      if (location != null)
+                        _MetaChip(
+                          icon: Icons.place_outlined,
+                          label: location,
+                        ),
+                      _MetaChip(
+                        icon: Icons.calendar_today_outlined,
+                        label: formattedDate,
+                      ),
+                      if (socialCount > 0)
+                        _MetaChip(
+                          icon: Icons.link,
+                          label:
+                              '$socialCount lien${socialCount > 1 ? 's' : ''}',
+                        ),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
+            ),
+            if (conseil.isNew)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.chocolat.withOpacity(0.8),
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(20),
+                      bottomLeft: Radius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    '🎖️',
+                    style: TextStyle(fontSize: 22),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
