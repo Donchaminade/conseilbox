@@ -31,10 +31,9 @@ class PubliciteDetailScreen extends StatelessWidget {
               label: const Text('Détails complets'),
               onPressed: () async {
                 final uri = Uri.parse(publicite.targetUrl!);
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri);
-                } else {
-                  // Afficher une erreur si l'URL ne peut pas être lancée
+                try {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Impossible d\'ouvrir le lien: ${publicite.targetUrl}'),
