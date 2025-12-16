@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:conseilbox/core/network/api_exception.dart';
+import 'package:conseilbox/features/conseils/conseil_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -16,7 +17,7 @@ import '../../core/widgets/card_conseil.dart';
 import '../../core/widgets/custom_navbar.dart';
 import '../../core/widgets/publicite_card.dart';
 import '../../shared/widgets/bgstyle.dart';
-import '../conseils/conseil_detail_screen.dart';
+import '../conseils/conseillist.dart';
 import '../conseils/my_suggestions_screen.dart';
 import '../conseils/widgets/conseil_form_sheet.dart';
 import '../publicites/publicite_detail_screen.dart';
@@ -38,6 +39,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController _carouselController =
       PageController(viewportFraction: 0.9);
   final TextEditingController _publiciteSearchController = TextEditingController();
+  final PageController _infoCarouselController = PageController();
+  int _infoCarouselIndex = 0;
   Map<String, dynamic> _publiciteFilters = {'order': 'latest', 'status': 'active'};
 
   int _index = 0;
@@ -58,10 +61,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _favoritesManager.addListener(_handleFavoritesChanged);
-    _fetchConseils();
+    // _fetchConseils();
     _fetchPublicites();
-    _conseilsScrollController.addListener(_onScroll);
+    // _conseilsScrollController.addListener(_onScroll);
     _scheduleCarouselTimer();
   }
 
@@ -299,15 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       
         void _applySearch() {
-          setState(() {
-            _filters = {
-              ..._filters,
-              'search': _searchController.text.trim().isEmpty
-                  ? null
-                  : _searchController.text.trim(),
-            };
-          });
-          _fetchConseils();
+          // No-op
         }
       
         @override
@@ -370,10 +364,10 @@ class _HomeScreenState extends State<HomeScreen> {
               !includeHeader && _conseilsError != null && showFallback;
           final int headerCount = includeHeader || showNoticeWithoutHeader ? 1 : 0;
           final int totalItems =
-              headerCount + displayedConseils.length + (showLoader ? 1 : 0);
+              headerCount + displayedConseils.length + 1; // +1 for info carousel
       
           return RefreshIndicator(
-            onRefresh: () => _fetchConseils(),
+            onRefresh: () async {},
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
               controller: _conseilsScrollController,
@@ -431,11 +425,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }
       
-                if (showLoader && dataIndex == displayedConseils.length) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
+                if (dataIndex == displayedConseils.length) {
+                  return _buildInfoCarousel();
                 }
       
                 return const SizedBox.shrink();
@@ -445,79 +436,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       
         Widget _buildConseilsExplorer() {
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: _searchController,
-                      onSubmitted: (_) => _applySearch(),
-                      decoration: InputDecoration(
-                        hintText: 'Rechercher par auteur, lieu ou mot-clé',
-                        prefixIcon: const Icon(Icons.search),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            _applySearch();
-                          },
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                                  DropdownButtonFormField<String>(
-                                    value: (_filters['dropdownValue'] as String?) ?? 'latest',
-                                    decoration: InputDecoration(
-                                      labelText: 'Tri',
-                                      prefixIcon: const Icon(Icons.sort_rounded),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    items: const [
-                                      DropdownMenuItem(
-                                        value: 'latest',
-                                        child: Text('Plus récents'),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'oldest',
-                                        child: Text('Plus anciens'),
-                                      ),
-                                      DropdownMenuItem(
-                                        value: 'random',
-                                        child: Text('Aléatoires'),
-                                      ),
-                                    ],
-                                    onChanged: (value) {
-                                      if (value == null) return;
-                                      setState(() {
-                                        String sortBy = 'created_at';
-                                        String order = 'DESC';
-                                        if (value == 'oldest') {
-                                          order = 'ASC';
-                                        } else if (value == 'random') {
-                                          sortBy = 'random';
-                                        }
-                                        _filters = {
-                                          ..._filters,
-                                          'sortBy': sortBy,
-                                          'order': order,
-                                          'dropdownValue': value,
-                                        };
-                                      });
-                                      _fetchConseils();
-                                    },
-                                  ),                  ],
-                ),
-              ),
-              Expanded(child: _buildConseilsFeed(includeHeader: false)),
-            ],
-          );
+          return const ConseilListScreen();
         }
       
         Widget _buildFavoritesTab() {
@@ -1069,6 +988,75 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
       
+        Widget _buildInfoCarousel() {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text('À propos de l\'application', style: AppTextStyles.title),
+              ),
+              SizedBox(
+                height: 140, // Adjusted height for no images
+                child: PageView.builder(
+                  controller: _infoCarouselController,
+                  itemCount: _infoCarouselItems.length,
+                  onPageChanged: (value) => setState(() => _infoCarouselIndex = value),
+                  itemBuilder: (context, index) {
+                    final item = _infoCarouselItems[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        color: AppColors.chocolat.withAlpha(50),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                item.title,
+                                style: AppTextStyles.title.copyWith(fontSize: 16, color: AppColors.chocolat),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                item.content,
+                                style: AppTextStyles.body.copyWith(fontSize: 14),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_infoCarouselItems.length, (i) {
+                  final bool isActive = i == _infoCarouselIndex;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    height: 8,
+                    width: isActive ? 24 : 8,
+                    decoration: BoxDecoration(
+                      color: isActive ? AppColors.chocolat : AppColors.chocolat.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 16),
+            ],
+          );
+        }
+      
         void _showToast(String message) {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1114,4 +1102,29 @@ class _HomeScreenState extends State<HomeScreen> {
           assetPath: 'assets/images/irokou.png',
         ),
       ];
+
+class _InfoCarouselItem {
+  const _InfoCarouselItem({
+    required this.title,
+    required this.content,
+  });
+
+  final String title;
+  final String content;
+}
+
+const List<_InfoCarouselItem> _infoCarouselItems = [
+  _InfoCarouselItem(
+    title: 'Bienvenue sur ConseilBox',
+    content: 'La plateforme de partage de connaissances et d\'expériences pour la communauté.',
+  ),
+  _InfoCarouselItem(
+    title: 'Partagez un Conseil',
+    content: 'Utilisez le bouton "Conseiller" pour soumettre vos propres conseils et aider les autres.',
+  ),
+  _InfoCarouselItem(
+    title: 'Découvrez & Grandissez',
+    content: 'Explorez les conseils des autres, sauvegardez vos favoris et continuez d\'apprendre.',
+  ),
+];
       
