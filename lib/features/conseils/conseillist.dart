@@ -19,7 +19,7 @@ class ConseilListScreen extends StatefulWidget {
 
 class _ConseilListScreenState extends State<ConseilListScreen> {
   final ConseilService _conseilService = ConseilService();
-  final FavoritesManager _favoritesManager = FavoritesManager();
+
   final ScrollController _scrollController = ScrollController();
 
   List<Conseil> _conseils = [];
@@ -31,14 +31,14 @@ class _ConseilListScreenState extends State<ConseilListScreen> {
   @override
   void initState() {
     super.initState();
-    _favoritesManager.addListener(_onFavoritesChanged);
+    context.read<FavoritesManager>().addListener(_onFavoritesChanged);
     _scrollController.addListener(_onScroll);
     _fetchConseils(reset: true);
   }
 
   @override
   void dispose() {
-    _favoritesManager.removeListener(_onFavoritesChanged);
+    context.read<FavoritesManager>().removeListener(_onFavoritesChanged);
     _scrollController.dispose();
     super.dispose();
   }
@@ -104,7 +104,7 @@ class _ConseilListScreenState extends State<ConseilListScreen> {
   }
 
   void _toggleFavorite(Conseil conseil) {
-    _favoritesManager.toggle(conseil);
+    context.read<FavoritesManager>().toggle(conseil);
   }
 
   Future<void> _openDetail(Conseil conseil) async {
@@ -112,7 +112,7 @@ class _ConseilListScreenState extends State<ConseilListScreen> {
       MaterialPageRoute(
         builder: (_) => ConseilDetailScreen(
           conseil: conseil,
-          favorites: _favoritesManager,
+          favorites: context.read<FavoritesManager>(),
         ),
       ),
     );
@@ -181,7 +181,7 @@ class _ConseilListScreenState extends State<ConseilListScreen> {
             child: CardConseil(
               conseil: conseil,
               onTap: () => _openDetail(conseil),
-              isFavorite: _favoritesManager.isFavorite(conseil),
+              isFavorite: context.watch<FavoritesManager>().isFavorite(conseil),
               onShare: () => _shareConseil(conseil),
               onFavorite: () => _toggleFavorite(conseil),
             ),

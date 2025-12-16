@@ -368,21 +368,7 @@ _scheduleCarouselTimer();
         },
         child: Scaffold(
           extendBody: true,
-          appBar: AppBar(
-            title: const Text('ConseilBox'),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings_outlined),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const SettingsScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+
           body: Stack(
             children: [
               const GeometricBackground(),
@@ -422,76 +408,118 @@ _scheduleCarouselTimer();
     final bool showLoader = _loadingMore && !showFallback;
     final bool showNoticeWithoutHeader =
         !includeHeader && _conseilsError != null && showFallback;
-    final int headerCount = includeHeader || showNoticeWithoutHeader ? 1 : 0;
-    final int totalItems =
-        headerCount + displayedConseils.length + 1; // +1 for info carousel
 
     return RefreshIndicator(
-      onRefresh: () async {},
-      child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
+      onRefresh: () async {
+        await _fetchConseils(reset: true);
+      },
+      child: CustomScrollView(
         controller: _conseilsScrollController,
-        padding:
-            const EdgeInsets.only(bottom: 120, left: 16, right: 16, top: 16),
-        itemCount: totalItems,
-        itemBuilder: (context, index) {
-          if (headerCount == 1 && index == 0) {
-            if (includeHeader) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildHomeHeader(context),
-                  if (_loadingConseils)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: LinearProgressIndicator(minHeight: 3),
+        slivers: <Widget>[
+          SliverAppBar(
+            title: const Text('ConseilBox'),
+            floating: true,
+            pinned: true,
+            snap: true, // Optional: Makes the app bar snap into view faster
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings_outlined),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const SettingsScreen(),
                     ),
-                  if (_conseilsError != null && showFallback)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Text(
-                        'Connexion instable. Nous partageons quelques conseils sélectionnés en attendant vos données.',
-                        style: AppTextStyles.small
-                            .copyWith(color: Colors.red.shade700),
-                      ),
-                    ),
-                ],
-              );
-            } else {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  'Connexion instable. Nous partageons quelques conseils sélectionnés en attendant vos données.',
-                  style:
-                      AppTextStyles.small.copyWith(color: Colors.red.shade700),
-                ),
-              );
-            }
-          }
-
-          final int dataIndex = index - headerCount;
-
-          if (dataIndex < displayedConseils.length) {
-            final conseil = displayedConseils[dataIndex];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: CardConseil(
-                conseil: conseil,
-                onTap: () => _openDetail(conseil),
-                isFavorite:
-                    context.watch<FavoritesManager>().isFavorite(conseil),
-                onShare: () => _shareConseil(conseil),
-                onFavorite: () => _toggleFavorite(conseil),
+                  );
+                },
               ),
-            );
-          }
-
-          if (dataIndex == displayedConseils.length) {
-            return _buildInfoCarousel();
-          }
-
-          return const SizedBox.shrink();
-        },
+            ],
+          ),
+          if (includeHeader) ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+                child: _buildCarouselSection(context),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: const SizedBox(height: 16),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: _buildStatsSection(),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: const SizedBox(height: 16),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: _buildQuickActionsSection(context),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: const SizedBox(height: 8),
+            ),
+            SliverToBoxAdapter(
+              child: const Divider(),
+            ),
+            SliverToBoxAdapter(
+              child: const SizedBox(height: 8),
+            ),
+            if (_loadingConseils)
+              SliverToBoxAdapter(
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: LinearProgressIndicator(minHeight: 3),
+                ),
+              ),
+            if (_conseilsError != null && showFallback)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
+                  child: Text(
+                    'Connexion instable. Nous partageons quelques conseils sélectionnés en attendant vos données.',
+                    style: AppTextStyles.small
+                        .copyWith(color: Colors.red.shade700),
+                  ),
+                ),
+              ),
+          ],
+          SliverPadding(
+            padding: const EdgeInsets.only(bottom: 120, left: 16, right: 16),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (BuildContext context, int index) {
+                  final conseil = displayedConseils[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: CardConseil(
+                      conseil: conseil,
+                      onTap: () => _openDetail(conseil),
+                      isFavorite:
+                          context.watch<FavoritesManager>().isFavorite(conseil),
+                      onShare: () => _shareConseil(conseil),
+                      onFavorite: () => _toggleFavorite(conseil),
+                    ),
+                  );
+                },
+                childCount: displayedConseils.length,
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: _buildInfoCarousel(),
+          ),
+          if (showLoader)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -595,21 +623,7 @@ _scheduleCarouselTimer();
     );
   }
 
-  Widget _buildHomeHeader(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildCarouselSection(context),
-        const SizedBox(height: 16),
-        _buildStatsSection(), // Nouvelle section pour les stats
-        const SizedBox(height: 16),
-        _buildQuickActionsSection(context),
-        const SizedBox(height: 8),
-        const Divider(),
-        const SizedBox(height: 8),
-      ],
-    );
-  }
+
 
   Widget _buildStatsSection() {
     return Padding(
