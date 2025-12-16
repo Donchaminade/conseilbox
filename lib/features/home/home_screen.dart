@@ -47,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Conseil> _conseils = [];
   final List<Conseil> _mySuggestions = [];
   PaginatedResponse<Conseil>? _pagination;
-  Map<String, dynamic> _filters = {'order': 'latest', 'status': 'published'};
+  Map<String, dynamic> _filters = {'order': 'latest', 'status': 'published,active'};
 
   bool _loadingPublicites = false;
   String? _publicitesError;
@@ -97,8 +97,8 @@ class _HomeScreenState extends State<HomeScreen> {
               author: _filters['author'] as String?,
               location: _filters['location'] as String?,
               search: _filters['search'] as String?,
-              sortBy: 'created_at', // Added sortBy with default value
-              order: (_filters['order'] as String?) ?? 'DESC', // Updated default order
+                      sortBy: _filters['sortBy'] as String? ?? 'created_at',
+                      order: _filters['order'] as String? ?? 'DESC',
             );
       
             if (!mounted) return;
@@ -470,38 +470,49 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: (_filters['order'] as String?) ?? 'latest',
-                      decoration: InputDecoration(
-                        labelText: 'Tri',
-                        prefixIcon: const Icon(Icons.sort_rounded),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'latest',
-                          child: Text('Plus récents'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'oldest',
-                          child: Text('Plus anciens'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'random',
-                          child: Text('Aléatoires'),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() {
-                          _filters = {..._filters, 'order': value};
-                        });
-                        _fetchConseils();
-                      },
-                    ),
-                  ],
+                                  DropdownButtonFormField<String>(
+                                    value: (_filters['dropdownValue'] as String?) ?? 'latest',
+                                    decoration: InputDecoration(
+                                      labelText: 'Tri',
+                                      prefixIcon: const Icon(Icons.sort_rounded),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    items: const [
+                                      DropdownMenuItem(
+                                        value: 'latest',
+                                        child: Text('Plus récents'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'oldest',
+                                        child: Text('Plus anciens'),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: 'random',
+                                        child: Text('Aléatoires'),
+                                      ),
+                                    ],
+                                    onChanged: (value) {
+                                      if (value == null) return;
+                                      setState(() {
+                                        String sortBy = 'created_at';
+                                        String order = 'DESC';
+                                        if (value == 'oldest') {
+                                          order = 'ASC';
+                                        } else if (value == 'random') {
+                                          sortBy = 'random';
+                                        }
+                                        _filters = {
+                                          ..._filters,
+                                          'sortBy': sortBy,
+                                          'order': order,
+                                          'dropdownValue': value,
+                                        };
+                                      });
+                                      _fetchConseils();
+                                    },
+                                  ),                  ],
                 ),
               ),
               Expanded(child: _buildConseilsFeed(includeHeader: false)),

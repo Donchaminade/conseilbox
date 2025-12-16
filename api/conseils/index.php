@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $offset = ($page - 1) * $limit;
 
     // Sorting
-    $allowedSortBy = ['id', 'title', 'author', 'location', 'status', 'created_at'];
+    $allowedSortBy = ['id', 'title', 'author', 'location', 'status', 'created_at', 'random'];
     $sortBy = isset($_GET['sort_by']) && in_array($_GET['sort_by'], $allowedSortBy) ? $_GET['sort_by'] : 'created_at';
     $order = isset($_GET['order']) && in_array(strtoupper($_GET['order']), ['ASC', 'DESC']) ? strtoupper($_GET['order']) : 'DESC';
 
@@ -17,13 +17,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $whereClauses = [];
     $bindParams = [];
 
-    if (isset($_GET['status']) && !empty($_GET['status'])) {
-        $allowedStatuses = ['pending', 'published', 'rejected'];
-        if (in_array($_GET['status'], $allowedStatuses)) {
-            $whereClauses[] = 'status = :status';
-            $bindParams[':status'] = $_GET['status'];
-        } else {
-            sendError('Invalid status filter. Allowed values are: ' . implode(', ', $allowedStatuses), 400);
+    if (isset($_GET['status'])) {
+        $statuses = explode(',', $_GET['status']); // Handle comma-separated statuses
+        $placeholders = [];
+        $i = 0;
+        foreach ($statuses as $status) {
+            $status = trim($status);
+            if (!in_array($status, ['pending', 'published', 'rejected', 'active'])) { // Added 'active' here
+                sendError('Invalid status filter. Allowed values are: pending, published, rejected, active', 400);
+            }
+            $placeholder = ':status' . $i++;
+            $placeholders[] = $placeholder;
+            $bindParams[$placeholder] = $status;
+        }
+        if (!empty($placeholders)) {
+            $whereClauses[] = 'status IN (' . implode(',', $placeholders) . ')';
         }
     }
     
@@ -34,14 +42,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     }
 
 
-    // Construire la requête (sans la colonne 'image')
+    // Build the query
     $query = "SELECT id, title, content, anecdote, author, location, status, social_link_1, social_link_2, social_link_3, created_at FROM conseils";
 
     if (!empty($whereClauses)) {
         $query .= " WHERE " . implode(' AND ', $whereClauses);
     }
 
-    $query .= " ORDER BY " . $sortBy . " " . $order . " LIMIT :limit OFFSET :offset";
+    if ($sortBy === 'random') {
+        $query .= " ORDER BY RAND()";
+    } else {
+        $query .= " ORDER BY " . $sortBy . " " . $order;
+    }
+    
+    $query .= " LIMIT :limit OFFSET :offset";
 
     $stmt = $conn->prepare($query);
 
@@ -105,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         sendError('Author is required and must be between 2 and 255 characters.', 400);
     }
 
-    $allowedStatuses = ['pending', 'published', 'rejected'];
+    $allowedStatuses = ['pending', 'published', 'rejected', 'active'];
     if (!in_array($data->status, $allowedStatuses)) {
         sendError('Invalid status. Allowed values are: ' . implode(', ', $allowedStatuses), 400);
     }

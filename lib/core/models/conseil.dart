@@ -69,4 +69,21 @@ class Conseil {
     }
     return null;
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'content': content,
+      'anecdote': anecdote,
+      'author': author,
+      'location': location,
+      'status': status,
+      'social_link_1': socialLink1,
+      'social_link_2': socialLink2,
+      'social_link_3': socialLink3,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+    };
+  }
 }
