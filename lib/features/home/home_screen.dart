@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math'; // For min function
 
 import 'package:conseilbox/core/network/api_exception.dart';
 import 'package:conseilbox/features/conseils/conseil_detail_screen.dart';
@@ -33,6 +34,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const int _stackCardCount = 5; // Number of conseils to display in the stacked card animation
   final ConseilService _conseilService = ConseilService();
   final PubliciteService _publiciteService = PubliciteService();
   // final FavoritesManager _favoritesManager = FavoritesManager(); // Supprimé
@@ -408,11 +410,17 @@ _scheduleCarouselTimer();
 
   Widget _buildConseilsFeed({bool includeHeader = true}) {
     final bool showFallback = _conseils.isEmpty;
-    final List<Conseil> displayedConseils =
-        showFallback ? _fallbackConseils : _conseils;
-    final bool showLoader = _loadingMore && !showFallback;
-    final bool showNoticeWithoutHeader =
-        !includeHeader && _conseilsError != null && showFallback;
+    List<Conseil> allConseils = showFallback ? _fallbackConseils : _conseils;
+
+    // Split conseils for stack and list
+    List<Conseil> stackedConseils = [];
+    List<Conseil> remainingConseils = [];
+
+    if (allConseils.isNotEmpty) {
+      // Ensure we don't try to take more than available
+      stackedConseils = allConseils.take(min(_stackCardCount, allConseils.length)).toList();
+      remainingConseils = allConseils.skip(_stackCardCount).toList();
+    }
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -440,9 +448,25 @@ _scheduleCarouselTimer();
             ],
           ),
           if (includeHeader) ...[
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _SliverPersistentHeaderDelegate(
+                minHeight: 50.0, // Adjust min/max height as needed
+                maxHeight: 70.0,
+                child: Container(
+                  color: Theme.of(context).scaffoldBackgroundColor, // Background color for the sticky header
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    _publicites.isEmpty ? 'Inspiration ConseilBox' : 'Tech pubs en vedette',
+                    style: AppTextStyles.title,
+                  ),
+                ),
+              ),
+            ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+                padding: const EdgeInsets.only(left: 16.0, right: 16.0), // Removed top padding as header has it
                 child: _buildCarouselSection(context),
               ),
             ),
@@ -458,9 +482,25 @@ _scheduleCarouselTimer();
             SliverToBoxAdapter(
               child: const SizedBox(height: 16),
             ),
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _SliverPersistentHeaderDelegate(
+                minHeight: 50.0,
+                maxHeight: 70.0,
+                child: Container(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    'Actions rapides',
+                    style: AppTextStyles.title,
+                  ),
+                ),
+              ),
+            ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0), // No top padding needed here
                 child: _buildQuickActionsSection(context),
               ),
             ),
@@ -492,30 +532,71 @@ _scheduleCarouselTimer();
                 ),
               ),
           ],
-          SliverPadding(
-            padding: const EdgeInsets.only(bottom: 120, left: 16, right: 16),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (BuildContext context, int index) {
-                  final conseil = displayedConseils[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: CardConseil(
-                      conseil: conseil,
-                      onTap: () => _openDetail(conseil),
-                      isFavorite:
-                          context.watch<FavoritesManager>().isFavorite(conseil),
-                      onShare: () => _shareConseil(conseil),
-                      onFavorite: () => _toggleFavorite(conseil),
-                    ),
-                  );
-                },
-                childCount: displayedConseils.length,
+          // Header for "Nouveaux Conseils"
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _SliverPersistentHeaderDelegate(
+              minHeight: 50.0,
+              maxHeight: 70.0,
+              child: Container(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  'Nouveaux Conseils',
+                  style: AppTextStyles.title,
+                ),
               ),
             ),
           ),
+          // Stacked Conseils Cards
+          if (stackedConseils.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: _CardStackConseils(
+                  // Pass a copy of the list, as the internal widget will modify it
+                  conseils: List<Conseil>.from(stackedConseils),
+                  onSwipe: (swipedConseil) {
+                    // This callback is called when a card is effectively swiped.
+                    // For now, _CardStackConseils handles internal reordering.
+                    // If we need to perform actions or update the main _conseils list
+                    // in HomeScreenState, this is where we would do it.
+                    // For example, if we want to show a toast or log the swiped conseil.
+                    debugPrint('Conseil swiped: ${swipedConseil.title}');
+                  },
+                ),
+              ),
+            ),
+          // Remaining Conseils in a regular list
+          if (remainingConseils.isNotEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.only(bottom: 120, left: 16, right: 16, top: 16),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    final conseil = remainingConseils[index]; // Use remainingConseils
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: CardConseil(
+                        conseil: conseil,
+                        onTap: () => _openDetail(conseil),
+                        isFavorite:
+                            context.watch<FavoritesManager>().isFavorite(conseil),
+                        onShare: () => _shareConseil(conseil),
+                        onFavorite: () => _toggleFavorite(conseil),
+                      ),
+                    );
+                  },
+                  childCount: remainingConseils.length, // Use remainingConseils length
+                ),
+              ),
+            ),
           SliverToBoxAdapter(
-            child: _buildInfoCarousel(),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 120.0), // Add extra space at the bottom of the info carousel
+              child: _buildInfoCarousel(),
+            ),
           ),
           if (showLoader)
             SliverToBoxAdapter(
@@ -676,24 +757,17 @@ _scheduleCarouselTimer();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                showingDefaults
-                    ? 'Inspiration ConseilBox'
-                    : 'Tech pubs en vedette',
-                style: AppTextStyles.title,
-              ),
-            ),
-            if (_loadingPublicites)
+        if (_loadingPublicites) // Keep loading indicator if it's there
+          Row(
+            children: [
+              Expanded(child: Container()), // Empty expanded to push indicator to right
               const SizedBox(
                 width: 18,
                 height: 18,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
-          ],
-        ),
+            ],
+          ),
         if (_publicitesError != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -847,9 +921,8 @@ _scheduleCarouselTimer();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Actions rapides', style: AppTextStyles.title),
-        const SizedBox(height: 12),
+      children: [ // Added missing children array
+        // Title moved to SliverPersistentHeader
         Wrap(
           spacing: 12,
           runSpacing: 12,
@@ -1259,3 +1332,187 @@ const List<_InfoCarouselItem> _infoCarouselItems = [
     content: 'Vos données sont protégées. ConseilBox s\'engage pour la sécurité de ses utilisateurs.',
   ),
 ];
+
+class _SliverPersistentHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double minHeight;
+  final double maxHeight;
+
+  _SliverPersistentHeaderDelegate({
+    required this.child,
+    this.minHeight = 40.0,
+    this.maxHeight = 60.0,
+  });
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  bool shouldRebuild(_SliverPersistentHeaderDelegate oldDelegate) {
+    return oldDelegate.minHeight != minHeight ||
+        oldDelegate.maxHeight != maxHeight ||
+        oldDelegate.child != child;
+  }
+}
+
+// New Widget for Stacked Conseils Cards
+class _CardStackConseils extends StatefulWidget {
+  final List<Conseil> conseils;
+  final Function(Conseil) onSwipe; // Callback when a card is swiped
+
+  const _CardStackConseils({
+    super.key,
+    required this.conseils,
+    required this.onSwipe,
+  });
+
+  @override
+  State<_CardStackConseils> createState() => _CardStackConseilsState();
+}
+
+class _CardStackConseilsState extends State<_CardStackConseils> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _rotationAnimation;
+  int _topCardIndex = 0;
+  List<Conseil> _currentConseils = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _currentConseils = List.from(widget.conseils); // Initialize with provided conseils
+
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(1.0, 0.0), // Swipe right
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    ));
+
+    _rotationAnimation = Tween<double>(begin: 0, end: 0.1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeOut,
+      ),
+    );
+
+    _controller.addListener(() {
+      if (_controller.isCompleted) {
+        setState(() {
+          // Move the swiped card to the end of the list
+          Conseil swipedConseil = _currentConseils.removeAt(_topCardIndex);
+          _currentConseils.add(swipedConseil);
+          _controller.reset(); // Reset controller for the next swipe
+        });
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _CardStackConseils oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.conseils != oldWidget.conseils) {
+      _currentConseils = List.from(widget.conseils);
+      _topCardIndex = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleSwipe() {
+    if (_controller.isAnimating) return;
+    _controller.forward();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_currentConseils.isEmpty) {
+      return const SizedBox.shrink(); // Or a placeholder
+    }
+
+    return SizedBox(
+      height: 350, // Fixed height for the card stack
+      child: Stack(
+        children: List.generate(_currentConseils.length, (index) {
+          final conseil = _currentConseils[index];
+          bool isTopCard = index == _topCardIndex;
+
+          return Positioned.fill(
+            key: ValueKey(conseil.id), // Unique key for reordering
+            child: GestureDetector(
+              onHorizontalDragUpdate: isTopCard
+                  ? (details) {
+                      setState(() {
+                        // Update slide animation based on drag
+                        // For simplicity, directly animate on drag end rather than real-time drag update
+                      });
+                    }
+                  : null,
+              onHorizontalDragEnd: isTopCard
+                  ? (details) {
+                      if (details.primaryVelocity! > 100) {
+                        _handleSwipe(); // Swipe right
+                      } else if (details.primaryVelocity! < -100) {
+                        // Swipe left (if desired, currently only right swipe implemented)
+                        _handleSwipe(); // For now, treat left swipe as just advancing
+                      } else {
+                        _controller.reverse(); // Bring card back if not swiped hard enough
+                      }
+                    }
+                  : null,
+              child: AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  double offsetX = isTopCard ? _slideAnimation.value.dx * 300 : 0; // Move off screen
+                  double rotationZ = isTopCard ? _rotationAnimation.value : 0; // Rotate slightly
+
+                  return Transform.translate(
+                    offset: Offset(offsetX, 0),
+                    child: Transform.rotate(
+                      angle: rotationZ,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: (index * 10).toDouble(), // Stack effect
+                          left: (index * 5).toDouble(),
+                          right: (index * 5).toDouble(),
+                        ),
+                        child: CardConseil(
+                          conseil: conseil,
+                          onTap: () => widget.onSwipe(conseil), // Re-use onSwipe for detail view
+                          isFavorite: context.watch<FavoritesManager>().isFavorite(conseil),
+                          onShare: () => widget.onSwipe(conseil), // For example, passing the action
+                          onFavorite: () => context.read<FavoritesManager>().toggle(conseil),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        }).reversed.toList(), // Render from bottom to top so top card is interactable
+      ),
+    );
+  }
+}
+
+
