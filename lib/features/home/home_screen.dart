@@ -937,74 +937,72 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildQuickActionsSection(BuildContext context) {
-    final double availableWidth =
-        MediaQuery.of(context).size.width - 32 /* padding */;
-    final double actionWidth =
-        (availableWidth / 2 - 12).clamp(140, availableWidth).toDouble();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Added missing children array
-        // Title moved to SliverPersistentHeader
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _quickActionButton(
-              width: actionWidth,
-              icon: Icons.edit_outlined,
-              label: 'Partager',
-              onTap: _openCreateSheet,
-            ),
-            _quickActionButton(
-              width: actionWidth,
-              icon: Icons.explore_outlined,
-              label: 'Explorer',
-              onTap: () => _setTab(1),
-            ),
-            _quickActionButton(
-              width: actionWidth,
-              icon: Icons.public,
-              label: 'Tech pubs',
-              onTap: () => _setTab(2),
-            ),
-            _quickActionButton(
-              width: actionWidth,
-              icon: Icons.favorite_outline,
-              label: 'Favoris',
-              onTap: () => _setTab(3),
-            ),
-            _quickActionButton(
-              width: actionWidth,
-              icon: Icons.list_alt,
-              label: 'Mes suggestions',
-              onTap: _openSuggestions,
-            ),
-          ],
-        ),
-      ],
+    // Les actions sont maintenant dans une liste à défilement horizontal pour un design plus fluide.
+    return SizedBox(
+      height: 110, // Hauteur ajustée pour les nouveaux boutons
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        children: [
+          _quickActionButton(
+            icon: Icons.edit_outlined,
+            label: 'Partager',
+            onTap: _openCreateSheet,
+          ),
+          const SizedBox(width: 12),
+          _quickActionButton(
+            icon: Icons.explore_outlined,
+            label: 'Explorer',
+            onTap: () => _setTab(1),
+          ),
+          const SizedBox(width: 12),
+          _quickActionButton(
+            icon: Icons.public,
+            label: 'Tech pubs',
+            onTap: () => _setTab(2),
+          ),
+          const SizedBox(width: 12),
+          _quickActionButton(
+            icon: Icons.favorite_outline,
+            label: 'Favoris',
+            onTap: () => _setTab(3),
+          ),
+          const SizedBox(width: 12),
+          _quickActionButton(
+            icon: Icons.list_alt,
+            label: 'Mes suggestions',
+            onTap: _openSuggestions,
+          ),
+        ],
+      ),
     );
   }
 
   Widget _quickActionButton({
-    required double width,
     required IconData icon,
     required String label,
     required VoidCallback onTap,
   }) {
-    return SizedBox(
-      width: width,
-      child: OutlinedButton.icon(
-        onPressed: onTap,
-        icon: Icon(icon, color: AppColors.chocolat),
-        label: Text(label),
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-          side: BorderSide(color: AppColors.chocolat.withValues(alpha: 0.5)),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    // Un design de bouton plus moderne et élevé.
+    return ElevatedButton(
+      onPressed: onTap,
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        backgroundColor: AppColors.blanc,
+        foregroundColor: AppColors.chocolat,
+        elevation: 4,
+        shadowColor: AppColors.chocolat.withOpacity(0.15),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
+      ),
+      child: Column( // Icône au-dessus du texte pour un look plus moderne
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 28),
+          const SizedBox(height: 8),
+          Text(label),
+        ],
       ),
     );
   }
@@ -1541,15 +1539,11 @@ class _CardStackConseilsState extends State<_CardStackConseils>
   // Define 5 distinct colors for the card borders
 
   static const List<Color> _borderColors = [
-    AppColors.chocolat,
-
+    AppColors.blanc,
+    Colors.orange,
     AppColors.cafe,
-
-    Colors.brown, // Darker brown
-
-    Colors.blueGrey, // A neutral color
-
-    Colors.orange, // A vibrant accent color
+    AppColors.chocolat,
+    Colors.yellow,
   ];
 
   @override
