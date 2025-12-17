@@ -936,63 +936,73 @@ _scheduleCarouselTimer();
       onRefresh: _fetchPublicites,
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _publiciteSearchController,
-                  onSubmitted: (_) => _applyPubliciteSearch(),
-                  decoration: InputDecoration(
-                    hintText: 'Rechercher des publicités...',
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _publiciteSearchController.clear();
-                        _applyPubliciteSearch();
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: (_publiciteFilters['order'] as String?) ?? 'latest',
-                  decoration: InputDecoration(
-                    labelText: 'Tri des publicités',
-                    prefixIcon: const Icon(Icons.sort_rounded),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'latest',
-                      child: Text('Les plus récentes'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'oldest',
-                      child: Text('Les plus anciennes'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    if (value == null) return;
-                    setState(() {
-                      _publiciteFilters = {
-                        ..._publiciteFilters,
-                        'order': value
-                      };
-                    });
-                    _fetchPublicites();
-                  },
-                ),
-              ],
-            ),
-          ),
-          Expanded(
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row( // Changed from Column to Row
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _publiciteSearchController,
+                                onSubmitted: (_) => _applyPubliciteSearch(),
+                                decoration: InputDecoration(
+                                  hintText: 'Rechercher des publicités...',
+                                  prefixIcon: const Icon(Icons.search, color: AppColors.chocolat),
+                                  suffixIcon: IconButton(
+                                    icon: const Icon(Icons.clear, color: AppColors.chocolat),
+                                    onPressed: () {
+                                      _publiciteSearchController.clear();
+                                      _applyPubliciteSearch();
+                                    },
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: BorderSide(color: AppColors.chocolat.withOpacity(0.5)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: BorderSide(color: AppColors.chocolat.withOpacity(0.5)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: const BorderSide(color: AppColors.chocolat, width: 2),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                                ),
+                                style: AppTextStyles.body,
+                              ),
+                            ),
+                            const SizedBox(width: 12), // Spacing between search and filter
+                            // Placeholder for sort button - will replace DropdownButtonFormField
+                                              PopupMenuButton<String>(
+                                                onSelected: (String value) {
+                                                  if (value == null) return;
+                                                  setState(() {
+                                                    _publiciteFilters = {..._publiciteFilters, 'order': value};
+                                                  });
+                                                  _fetchPublicites();
+                                                },
+                                                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                                  const PopupMenuItem<String>(
+                                                    value: 'latest',
+                                                    child: Text('Les plus récentes'),
+                                                  ),
+                                                  const PopupMenuItem<String>(
+                                                    value: 'oldest',
+                                                    child: Text('Les plus anciennes'),
+                                                  ),
+                                                ],
+                                                child: Container(
+                                                  width: 48, // Fixed width for a square button
+                                                  height: 48,
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.chocolat,
+                                                    borderRadius: BorderRadius.circular(16),
+                                                  ),
+                                                  child: const Icon(Icons.sort_rounded, color: Colors.white),
+                                                ),
+                                              ),                          ],
+                        ),
+                      ),          Expanded(
             child: GridView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.only(bottom: 120, left: 16, right: 16, top: 0), // Add horizontal padding
