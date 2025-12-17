@@ -443,7 +443,8 @@ class _HomeScreenState extends State<HomeScreen> {
             snap: true, // Optional: Makes the app bar snap into view faster
             actions: [
               IconButton(
-                icon: const Icon(Icons.settings_outlined), iconSize: 28,
+                icon: const Icon(Icons.settings_outlined),
+                iconSize: 28,
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -1434,26 +1435,35 @@ class _CardStackConseils extends StatefulWidget {
 class _CardStackConseilsState extends State<_CardStackConseils>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+
   late Animation<Offset> _slideAnimation;
+
   late Animation<double> _rotationAnimation;
-  int _topCardIndex = 0;
+
+  late Animation<double> _flipAnimation; // New animation for the 3D flip
+
+  int _currentIndex = 0;
+
   List<Conseil> _currentConseils = [];
+
   double _swipeDirection = 0.0; // -1.0 for left, 1.0 for right
-  Timer? _autoSwipeTimer;
 
   @override
   void initState() {
     super.initState();
+
     _currentConseils =
         List.from(widget.conseils); // Initialize with provided conseils
 
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 500), // Slightly longer for flip
+
       vsync: this,
     );
 
     _slideAnimation = Tween<Offset>(
       begin: Offset.zero,
+
       end: const Offset(1.0, 0.0), // Swipe right
     ).animate(CurvedAnimation(
       parent: _controller,
@@ -1467,13 +1477,22 @@ class _CardStackConseilsState extends State<_CardStackConseils>
       ),
     );
 
-    _controller.addListener(() {
-      if (_controller.isCompleted) {
+    // New flip animation
+
+    _flipAnimation = Tween<double>(begin: 0.0, end: 0.5 * pi).animate(
+      CurvedAnimation(
+        parent: _controller,
+
+        curve: Curves.easeIn, // EaseIn feels more natural for a departure
+      ),
+    );
+
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
         setState(() {
-          // Move the swiped card to the end of the list
-          Conseil swipedConseil = _currentConseils.removeAt(_topCardIndex);
-          _currentConseils.add(swipedConseil);
-          _controller.reset(); // Reset controller for the next swipe
+          _currentIndex += _swipeDirection.toInt();
+
+          _controller.reset();
         });
       }
     });
@@ -1482,131 +1501,164 @@ class _CardStackConseilsState extends State<_CardStackConseils>
   @override
   void didUpdateWidget(covariant _CardStackConseils oldWidget) {
     super.didUpdateWidget(oldWidget);
+
     if (widget.conseils != oldWidget.conseils) {
       _currentConseils = List.from(widget.conseils);
-      _topCardIndex = 0;
+
+      _currentIndex = 0;
     }
   }
 
   @override
   void dispose() {
     _controller.dispose();
+
     super.dispose();
   }
 
   void _handleSwipe(double direction) {
     // direction: -1 for left, 1 for right
+
     if (_controller.isAnimating) return;
+
+    // Boundary checks for non-circular deck
+
+    if (direction > 0 && _currentIndex >= _currentConseils.length - 1) {
+      return; // At the end, can't go next
+    }
+
+    if (direction < 0 && _currentIndex <= 0) {
+      return; // At the start, can't go previous
+    }
+
     setState(() {
       _swipeDirection = direction;
     });
+
     _controller.forward();
   }
+
+  // Define 5 distinct colors for the card borders
+
+  static const List<Color> _borderColors = [
+    AppColors.chocolat,
+
+    AppColors.cafe,
+
+    Colors.brown, // Darker brown
+
+    Colors.blueGrey, // A neutral color
+
+    Colors.orange, // A vibrant accent color
+  ];
 
   @override
   Widget build(BuildContext context) {
     if (_currentConseils.isEmpty) {
-      return const SizedBox.shrink(); // Or a placeholder
+      return const SizedBox.shrink();
     }
 
     return SizedBox(
-      height: 350, // Fixed height for the card stack
+      height: 350,
       child: Stack(
-        children: List.generate(_currentConseils.length, (index) {
-          final conseil = _currentConseils[index];
-          bool isTopCard = index == _topCardIndex;
+        children: _currentConseils
+            .asMap()
+            .entries
+            .map((entry) {
+              final index = entry.key;
 
-          return Positioned.fill(
-            key: ValueKey(conseil.id), // Unique key for reordering
-            child: GestureDetector(
-              onHorizontalDragUpdate: isTopCard
-                  ? (details) {
-                      setState(() {
-                        // Update slide animation based on drag
-                        // For simplicity, directly animate on drag end rather than real-time drag update
-                      });
-                    }
-                  : null,
-              onHorizontalDragEnd: isTopCard
-                  ? (details) {
-                      if (details.primaryVelocity == null ||
-                          details.primaryVelocity == 0) {
-                        _controller
-                            .reverse(); // No significant swipe, bring card back
-                        return;
-                      }
-                      if (details.primaryVelocity! > 0) {
-                        // Swiping right
-                        _handleSwipe(1.0);
-                      } else {
-                        // Swiping left
-                        _handleSwipe(-1.0);
-                      }
-                    }
-                  : null,
-              child: AnimatedBuilder(
+              final conseil = entry.value;
+
+              if (index < _currentIndex) {
+                return const SizedBox.shrink();
+              }
+
+              final isTopCard = index == _currentIndex;
+
+              final borderColor = _borderColors[index % _borderColors.length];
+
+              return AnimatedBuilder(
                 animation: _controller,
                 builder: (context, child) {
-                  double offsetX = isTopCard
-                      ? _slideAnimation.value.dx * 300 * _swipeDirection
-                      : 0; // Move off screen based on direction
-                  double rotationZ = isTopCard
-                      ? _rotationAnimation.value * _swipeDirection
-                      : 0; // Rotate slightly based on direction
+                  final matrix = Matrix4.identity();
 
-                  return Transform.translate(
-                    offset: Offset(offsetX, 0),
-                    child: Transform.rotate(
-                      angle: rotationZ,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          top: (index * 10).toDouble(), // Stack effect
-                          left: (index * 5).toDouble(),
-                          right: (index * 5).toDouble(),
-                        ),
-                        child: isTopCard
-                            ? CardConseil(
-                                conseil: conseil,
-                                onTap: () => widget.onSwipe(conseil),
-                                isFavorite: context
-                                    .watch<FavoritesManager>()
-                                    .isFavorite(conseil),
-                                onShare: () => widget.onSwipe(conseil),
-                                onFavorite: () => context
-                                    .read<FavoritesManager>()
-                                    .toggle(conseil),
-                              )
-                            : Container(
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .cardColor, // Use card background color
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  'Conseil', // Placeholder text
-                                  style: AppTextStyles.title.copyWith(
-                                      color:
-                                          AppColors.chocolat.withOpacity(0.5)),
-                                ),
-                              ),
-                      ),
-                    ),
+                  if (isTopCard) {
+                    final offsetX =
+                        _slideAnimation.value.dx * 300 * _swipeDirection;
+
+                    final rotationZ =
+                        _rotationAnimation.value * _swipeDirection;
+
+                    final rotationY = _flipAnimation.value * _swipeDirection;
+
+                    matrix.translate(offsetX, 0.0);
+
+                    matrix.rotateZ(rotationZ);
+
+                    matrix.rotateY(rotationY);
+                  } else {
+                    final stackIndex = index - _currentIndex;
+
+                    final topPadding = stackIndex * 10.0;
+
+                    final scale = 1.0 - (stackIndex * 0.05);
+
+                    matrix
+                      ..translate(0.0, topPadding)
+                      ..scale(scale);
+                  }
+
+                  return Transform(
+                    transform: matrix,
+                    alignment: Alignment.center,
+                    child: child,
                   );
                 },
-              ),
-            ),
-          );
-        })
+                child: GestureDetector(
+                  onHorizontalDragEnd: isTopCard
+                      ? (details) {
+                          if (details.primaryVelocity == null ||
+                              details.primaryVelocity!.abs() < 200) {
+                            return; // Insufficient velocity
+                          }
+
+                          if (details.primaryVelocity! > 0) {
+                            // Dragged Right -> Go to Previous Card
+
+                            _handleSwipe(-1.0);
+                          } else {
+                            // Dragged Left -> Go to Next Card
+
+                            _handleSwipe(1.0);
+                          }
+                        }
+                      : null,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        top: BorderSide(color: borderColor, width: 4.0),
+                        bottom: BorderSide(color: borderColor, width: 4.0),
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: CardConseil(
+                      conseil: conseil,
+                      onTap: isTopCard ? () => widget.onSwipe(conseil) : null,
+                      isFavorite:
+                          context.watch<FavoritesManager>().isFavorite(conseil),
+                      onShare: isTopCard ? () => widget.onSwipe(conseil) : null,
+                      onFavorite: isTopCard
+                          ? () =>
+                              context.read<FavoritesManager>().toggle(conseil)
+                          : null,
+                    ),
+                  ),
+                ),
+              );
+            })
+            .toList()
             .reversed
-            .toList(), // Render from bottom to top so top card is interactable
+            .toList(),
       ),
     );
   }

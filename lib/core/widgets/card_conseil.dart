@@ -41,7 +41,7 @@ class CardConseil extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Card(
-        color: Colors.transparent,
+        color: AppColors.blanc,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
