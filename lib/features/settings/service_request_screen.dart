@@ -57,7 +57,8 @@ class ServiceRequestScreen extends StatelessWidget {
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Formulaire en ligne a ajouter'),
+                    content: Text(
+                        'Contactez-nous à l\'adresse chaminade.dondah,adjolou@gmail.com'),
                   ),
                 );
               },

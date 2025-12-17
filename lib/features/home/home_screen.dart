@@ -34,7 +34,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static const int _stackCardCount = 5; // Number of conseils to display in the stacked card animation
+  static const int _stackCardCount =
+      5; // Number of conseils to display in the stacked card animation
   final ConseilService _conseilService = ConseilService();
   final PubliciteService _publiciteService = PubliciteService();
   // final FavoritesManager _favoritesManager = FavoritesManager(); // Supprimé
@@ -183,8 +184,8 @@ class _HomeScreenState extends State<HomeScreen> {
             error is ApiException ? error.message : error.toString();
       });
     } finally {
-_scheduleCarouselTimer();
-    _scheduleInfoCarouselTimer();
+      _scheduleCarouselTimer();
+      _scheduleInfoCarouselTimer();
       if (mounted) {
         if (reset) {
           setState(() => _loadingPublicites = false);
@@ -223,39 +224,41 @@ _scheduleCarouselTimer();
     });
   }
 
-          void _scheduleCarouselTimer() {
-            final length =
-                _publicites.isEmpty ? _defaultCarouselItems.length : _publicites.length;
-            if (_carouselIndex >= length) {
-              _carouselIndex = 0;
-            }
-            _restartCarouselTimer(itemCount: length);
-          }
-  
-          void _restartInfoCarouselTimer({required int itemCount}) {
-            _infoCarouselTimer?.cancel();
-            if (itemCount < 2) {
-              return;
-            }
-  
-            _infoCarouselTimer = Timer.periodic(const Duration(seconds: 7), (_) { // Slower scroll for info carousel
-              if (!_infoCarouselController.hasClients) return;
-              final nextPage = (_infoCarouselIndex + 1) % itemCount;
-              _infoCarouselController.animateToPage(
-                nextPage,
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeInOut,
-              );
-            });
-          }
-  
-          void _scheduleInfoCarouselTimer() {
-            final length = _infoCarouselItems.length;
-            if (_infoCarouselIndex >= length) {
-              _infoCarouselIndex = 0;
-            }
-            _restartInfoCarouselTimer(itemCount: length);
-          }
+  void _scheduleCarouselTimer() {
+    final length =
+        _publicites.isEmpty ? _defaultCarouselItems.length : _publicites.length;
+    if (_carouselIndex >= length) {
+      _carouselIndex = 0;
+    }
+    _restartCarouselTimer(itemCount: length);
+  }
+
+  void _restartInfoCarouselTimer({required int itemCount}) {
+    _infoCarouselTimer?.cancel();
+    if (itemCount < 2) {
+      return;
+    }
+
+    _infoCarouselTimer = Timer.periodic(const Duration(seconds: 7), (_) {
+      // Slower scroll for info carousel
+      if (!_infoCarouselController.hasClients) return;
+      final nextPage = (_infoCarouselIndex + 1) % itemCount;
+      _infoCarouselController.animateToPage(
+        nextPage,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  void _scheduleInfoCarouselTimer() {
+    final length = _infoCarouselItems.length;
+    if (_infoCarouselIndex >= length) {
+      _infoCarouselIndex = 0;
+    }
+    _restartInfoCarouselTimer(itemCount: length);
+  }
+
   void _toggleFavorite(Conseil conseil) {
     context.read<FavoritesManager>().toggle(conseil);
     final isNowFavorite = context.read<FavoritesManager>().isFavorite(conseil);
@@ -275,17 +278,18 @@ _scheduleCarouselTimer();
     );
   }
 
-          void _shareConseil(Conseil conseil) {
-            final content =
-                '${conseil.title}\n${conseil.content}\nPartagé via ConseilBox';
-            Share.share(content);
-          }
-  
-          void _sharePublicite(Publicite publicite) {
-            final content =
-                '${publicite.title}\n${publicite.content}\nPartagé via ConseilBox';
-            Share.share(content);
-          }
+  void _shareConseil(Conseil conseil) {
+    final content =
+        '${conseil.title}\n${conseil.content}\nPartagé via ConseilBox';
+    Share.share(content);
+  }
+
+  void _sharePublicite(Publicite publicite) {
+    final content =
+        '${publicite.title}\n${publicite.content}\nPartagé via ConseilBox';
+    Share.share(content);
+  }
+
   Future<void> _openSuggestions() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
@@ -375,7 +379,6 @@ _scheduleCarouselTimer();
         },
         child: Scaffold(
           extendBody: true,
-
           body: Stack(
             children: [
               const GeometricBackground(),
@@ -418,9 +421,13 @@ _scheduleCarouselTimer();
 
     if (allConseils.isNotEmpty) {
       // Ensure we don't try to take more than available
-      stackedConseils = allConseils.take(min(_stackCardCount, allConseils.length)).toList();
+      stackedConseils =
+          allConseils.take(min(_stackCardCount, allConseils.length)).toList();
       remainingConseils = allConseils.skip(_stackCardCount).toList();
     }
+
+    final bool showLoader =
+        _loadingMore && !showFallback; // Re-added definition
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -430,13 +437,13 @@ _scheduleCarouselTimer();
         controller: _conseilsScrollController,
         slivers: <Widget>[
           SliverAppBar(
-            title: const Text('ConseilBox'),
+            title: const Text('ConseilBox', style: TextStyle(fontSize: 25)),
             floating: true,
             pinned: true,
             snap: true, // Optional: Makes the app bar snap into view faster
             actions: [
               IconButton(
-                icon: const Icon(Icons.settings_outlined),
+                icon: const Icon(Icons.settings_outlined), iconSize: 28,
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -454,11 +461,14 @@ _scheduleCarouselTimer();
                 minHeight: 50.0, // Adjust min/max height as needed
                 maxHeight: 70.0,
                 child: Container(
-                  color: Theme.of(context).scaffoldBackgroundColor, // Background color for the sticky header
+                  color: Theme.of(context)
+                      .scaffoldBackgroundColor, // Background color for the sticky header
                   alignment: Alignment.centerLeft,
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
-                    _publicites.isEmpty ? 'Inspiration ConseilBox' : 'Tech pubs en vedette',
+                    _publicites.isEmpty
+                        ? 'Inspiration ConseilBox'
+                        : 'Tech pubs en vedette',
                     style: AppTextStyles.title,
                   ),
                 ),
@@ -466,7 +476,9 @@ _scheduleCarouselTimer();
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(left: 16.0, right: 16.0), // Removed top padding as header has it
+                padding: const EdgeInsets.only(
+                    left: 16.0,
+                    right: 16.0), // Removed top padding as header has it
                 child: _buildCarouselSection(context),
               ),
             ),
@@ -500,7 +512,8 @@ _scheduleCarouselTimer();
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0), // No top padding needed here
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0), // No top padding needed here
                 child: _buildQuickActionsSection(context),
               ),
             ),
@@ -523,7 +536,8 @@ _scheduleCarouselTimer();
             if (_conseilsError != null && showFallback)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
+                  padding:
+                      const EdgeInsets.only(bottom: 12, left: 16, right: 16),
                   child: Text(
                     'Connexion instable. Nous partageons quelques conseils sélectionnés en attendant vos données.',
                     style: AppTextStyles.small
@@ -553,7 +567,8 @@ _scheduleCarouselTimer();
           if (stackedConseils.isNotEmpty)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: _CardStackConseils(
                   // Pass a copy of the list, as the internal widget will modify it
                   conseils: List<Conseil>.from(stackedConseils),
@@ -571,30 +586,36 @@ _scheduleCarouselTimer();
           // Remaining Conseils in a regular list
           if (remainingConseils.isNotEmpty)
             SliverPadding(
-              padding: const EdgeInsets.only(bottom: 120, left: 16, right: 16, top: 16),
+              padding: const EdgeInsets.only(
+                  bottom: 120, left: 16, right: 16, top: 16),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (BuildContext context, int index) {
-                    final conseil = remainingConseils[index]; // Use remainingConseils
+                    final conseil =
+                        remainingConseils[index]; // Use remainingConseils
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: CardConseil(
                         conseil: conseil,
                         onTap: () => _openDetail(conseil),
-                        isFavorite:
-                            context.watch<FavoritesManager>().isFavorite(conseil),
+                        isFavorite: context
+                            .watch<FavoritesManager>()
+                            .isFavorite(conseil),
                         onShare: () => _shareConseil(conseil),
                         onFavorite: () => _toggleFavorite(conseil),
                       ),
                     );
                   },
-                  childCount: remainingConseils.length, // Use remainingConseils length
+                  childCount:
+                      remainingConseils.length, // Use remainingConseils length
                 ),
               ),
             ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 120.0), // Add extra space at the bottom of the info carousel
+              padding: const EdgeInsets.only(
+                  bottom:
+                      120.0), // Add extra space at the bottom of the info carousel
               child: _buildInfoCarousel(),
             ),
           ),
@@ -709,8 +730,6 @@ _scheduleCarouselTimer();
     );
   }
 
-
-
   Widget _buildStatsSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0),
@@ -720,7 +739,8 @@ _scheduleCarouselTimer();
           _buildStatItem(
             icon: Icons.lightbulb_outline,
             label: 'Conseils',
-            value: _pagination?.total ?? 0, // Utiliser le nombre total de conseils disponibles          ),
+            value: _pagination?.total ??
+                0, // Utiliser le nombre total de conseils disponibles          ),
           ),
           _buildStatItem(
             icon: Icons.campaign_outlined,
@@ -760,7 +780,9 @@ _scheduleCarouselTimer();
         if (_loadingPublicites) // Keep loading indicator if it's there
           Row(
             children: [
-              Expanded(child: Container()), // Empty expanded to push indicator to right
+              Expanded(
+                  child:
+                      Container()), // Empty expanded to push indicator to right
               const SizedBox(
                 width: 18,
                 height: 18,
@@ -921,7 +943,8 @@ _scheduleCarouselTimer();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [ // Added missing children array
+      children: [
+        // Added missing children array
         // Title moved to SliverPersistentHeader
         Wrap(
           spacing: 12,
@@ -1009,76 +1032,93 @@ _scheduleCarouselTimer();
       onRefresh: _fetchPublicites,
       child: Column(
         children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row( // Changed from Column to Row
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _publiciteSearchController,
-                                onSubmitted: (_) => _applyPubliciteSearch(),
-                                decoration: InputDecoration(
-                                  hintText: 'Rechercher des publicités...',
-                                  prefixIcon: const Icon(Icons.search, color: AppColors.chocolat),
-                                  suffixIcon: IconButton(
-                                    icon: const Icon(Icons.clear, color: AppColors.chocolat),
-                                    onPressed: () {
-                                      _publiciteSearchController.clear();
-                                      _applyPubliciteSearch();
-                                    },
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: BorderSide(color: AppColors.chocolat.withOpacity(0.5)),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: BorderSide(color: AppColors.chocolat.withOpacity(0.5)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: const BorderSide(color: AppColors.chocolat, width: 2),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                                ),
-                                style: AppTextStyles.body,
-                              ),
-                            ),
-                            const SizedBox(width: 12), // Spacing between search and filter
-                            // Placeholder for sort button - will replace DropdownButtonFormField
-                                              PopupMenuButton<String>(
-                                                onSelected: (String value) {
-                                                  if (value == null) return;
-                                                  setState(() {
-                                                    _publiciteFilters = {..._publiciteFilters, 'order': value};
-                                                  });
-                                                  _fetchPublicites();
-                                                },
-                                                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                                  const PopupMenuItem<String>(
-                                                    value: 'latest',
-                                                    child: Text('Les plus récentes'),
-                                                  ),
-                                                  const PopupMenuItem<String>(
-                                                    value: 'oldest',
-                                                    child: Text('Les plus anciennes'),
-                                                  ),
-                                                ],
-                                                child: Container(
-                                                  width: 48, // Fixed width for a square button
-                                                  height: 48,
-                                                  decoration: BoxDecoration(
-                                                    color: AppColors.chocolat,
-                                                    borderRadius: BorderRadius.circular(16),
-                                                  ),
-                                                  child: const Icon(Icons.sort_rounded, color: Colors.white),
-                                                ),
-                                              ),                          ],
-                        ),
-                      ),          Expanded(
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              // Changed from Column to Row
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _publiciteSearchController,
+                    onSubmitted: (_) => _applyPubliciteSearch(),
+                    decoration: InputDecoration(
+                      hintText: 'Rechercher des publicités...',
+                      prefixIcon:
+                          const Icon(Icons.search, color: AppColors.chocolat),
+                      suffixIcon: IconButton(
+                        icon:
+                            const Icon(Icons.clear, color: AppColors.chocolat),
+                        onPressed: () {
+                          _publiciteSearchController.clear();
+                          _applyPubliciteSearch();
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                            color: AppColors.chocolat.withOpacity(0.5)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(
+                            color: AppColors.chocolat.withOpacity(0.5)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: const BorderSide(
+                            color: AppColors.chocolat, width: 2),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 16),
+                    ),
+                    style: AppTextStyles.body,
+                  ),
+                ),
+                const SizedBox(width: 12), // Spacing between search and filter
+                // Placeholder for sort button - will replace DropdownButtonFormField
+                PopupMenuButton<String>(
+                  onSelected: (String value) {
+                    if (value == null) return;
+                    setState(() {
+                      _publiciteFilters = {
+                        ..._publiciteFilters,
+                        'order': value
+                      };
+                    });
+                    _fetchPublicites();
+                  },
+                  itemBuilder: (BuildContext context) =>
+                      <PopupMenuEntry<String>>[
+                    const PopupMenuItem<String>(
+                      value: 'latest',
+                      child: Text('Les plus récentes'),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'oldest',
+                      child: Text('Les plus anciennes'),
+                    ),
+                  ],
+                  child: Container(
+                    width: 48, // Fixed width for a square button
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.chocolat,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(Icons.sort_rounded, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
             child: GridView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 120, left: 16, right: 16, top: 0), // Add horizontal padding
+              padding: const EdgeInsets.only(
+                  bottom: 120,
+                  left: 16,
+                  right: 16,
+                  top: 0), // Add horizontal padding
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2, // Two columns
                 crossAxisSpacing: 2, // Spacing between columns
@@ -1091,7 +1131,8 @@ _scheduleCarouselTimer();
                 return PubliciteCard(
                   publicite: pub,
                   onTap: () => _openPubliciteDetail(pub),
-                  onShare: () => _sharePublicite(pub), // Pass the share callback
+                  onShare: () =>
+                      _sharePublicite(pub), // Pass the share callback
                 );
               },
             ),
@@ -1186,8 +1227,10 @@ _scheduleCarouselTimer();
                 child: Card(
                   elevation: 4, // Increased elevation
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)), // Increased border radius
-                  color: AppColors.chocolat.withOpacity(0.15), // Adjusted opacity
+                      borderRadius:
+                          BorderRadius.circular(20)), // Increased border radius
+                  color:
+                      AppColors.chocolat.withOpacity(0.15), // Adjusted opacity
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -1197,13 +1240,17 @@ _scheduleCarouselTimer();
                         Text(
                           item.title,
                           style: AppTextStyles.title.copyWith(
-                              fontSize: 18, color: AppColors.chocolat), // Larger font size for title
+                              fontSize: 18,
+                              color: AppColors
+                                  .chocolat), // Larger font size for title
                         ),
                         const SizedBox(height: 8),
                         Text(
                           item.content,
                           style: AppTextStyles.body.copyWith(
-                              fontSize: 14, color: AppColors.chocolat.withOpacity(0.8)), // Darker content text
+                              fontSize: 14,
+                              color: AppColors.chocolat
+                                  .withOpacity(0.8)), // Darker content text
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1313,23 +1360,28 @@ const List<_InfoCarouselItem> _infoCarouselItems = [
   ),
   _InfoCarouselItem(
     title: 'Restez Inspiré',
-    content: 'Chaque jour, de nouveaux conseils pour booster votre créativité et votre productivité.',
+    content:
+        'Chaque jour, de nouveaux conseils pour booster votre créativité et votre productivité.',
   ),
   _InfoCarouselItem(
     title: 'Contribuez à la Communauté',
-    content: 'Vos expériences sont précieuses. Partagez-les pour enrichir notre base de connaissances.',
+    content:
+        'Vos expériences sont précieuses. Partagez-les pour enrichir notre base de connaissances.',
   ),
   _InfoCarouselItem(
     title: 'Vos Favoris, Toujours à Portée',
-    content: 'Enregistrez les conseils qui vous parlent le plus pour les retrouver facilement.',
+    content:
+        'Enregistrez les conseils qui vous parlent le plus pour les retrouver facilement.',
   ),
   _InfoCarouselItem(
     title: 'Actualités & Publicités',
-    content: 'Restez informé des dernières tendances et découvrez des opportunités via nos publicités.',
+    content:
+        'Restez informé des dernières tendances et découvrez des opportunités via nos publicités.',
   ),
   _InfoCarouselItem(
     title: 'Sécurité et Confidentialité',
-    content: 'Vos données sont protégées. ConseilBox s\'engage pour la sécurité de ses utilisateurs.',
+    content:
+        'Vos données sont protégées. ConseilBox s\'engage pour la sécurité de ses utilisateurs.',
   ),
 ];
 
@@ -1379,17 +1431,21 @@ class _CardStackConseils extends StatefulWidget {
   State<_CardStackConseils> createState() => _CardStackConseilsState();
 }
 
-class _CardStackConseilsState extends State<_CardStackConseils> with SingleTickerProviderStateMixin {
+class _CardStackConseilsState extends State<_CardStackConseils>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _rotationAnimation;
   int _topCardIndex = 0;
   List<Conseil> _currentConseils = [];
+  double _swipeDirection = 0.0; // -1.0 for left, 1.0 for right
+  Timer? _autoSwipeTimer;
 
   @override
   void initState() {
     super.initState();
-    _currentConseils = List.from(widget.conseils); // Initialize with provided conseils
+    _currentConseils =
+        List.from(widget.conseils); // Initialize with provided conseils
 
     _controller = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -1438,8 +1494,12 @@ class _CardStackConseilsState extends State<_CardStackConseils> with SingleTicke
     super.dispose();
   }
 
-  void _handleSwipe() {
+  void _handleSwipe(double direction) {
+    // direction: -1 for left, 1 for right
     if (_controller.isAnimating) return;
+    setState(() {
+      _swipeDirection = direction;
+    });
     _controller.forward();
   }
 
@@ -1469,21 +1529,30 @@ class _CardStackConseilsState extends State<_CardStackConseils> with SingleTicke
                   : null,
               onHorizontalDragEnd: isTopCard
                   ? (details) {
-                      if (details.primaryVelocity! > 100) {
-                        _handleSwipe(); // Swipe right
-                      } else if (details.primaryVelocity! < -100) {
-                        // Swipe left (if desired, currently only right swipe implemented)
-                        _handleSwipe(); // For now, treat left swipe as just advancing
+                      if (details.primaryVelocity == null ||
+                          details.primaryVelocity == 0) {
+                        _controller
+                            .reverse(); // No significant swipe, bring card back
+                        return;
+                      }
+                      if (details.primaryVelocity! > 0) {
+                        // Swiping right
+                        _handleSwipe(1.0);
                       } else {
-                        _controller.reverse(); // Bring card back if not swiped hard enough
+                        // Swiping left
+                        _handleSwipe(-1.0);
                       }
                     }
                   : null,
               child: AnimatedBuilder(
                 animation: _controller,
                 builder: (context, child) {
-                  double offsetX = isTopCard ? _slideAnimation.value.dx * 300 : 0; // Move off screen
-                  double rotationZ = isTopCard ? _rotationAnimation.value : 0; // Rotate slightly
+                  double offsetX = isTopCard
+                      ? _slideAnimation.value.dx * 300 * _swipeDirection
+                      : 0; // Move off screen based on direction
+                  double rotationZ = isTopCard
+                      ? _rotationAnimation.value * _swipeDirection
+                      : 0; // Rotate slightly based on direction
 
                   return Transform.translate(
                     offset: Offset(offsetX, 0),
@@ -1495,13 +1564,39 @@ class _CardStackConseilsState extends State<_CardStackConseils> with SingleTicke
                           left: (index * 5).toDouble(),
                           right: (index * 5).toDouble(),
                         ),
-                        child: CardConseil(
-                          conseil: conseil,
-                          onTap: () => widget.onSwipe(conseil), // Re-use onSwipe for detail view
-                          isFavorite: context.watch<FavoritesManager>().isFavorite(conseil),
-                          onShare: () => widget.onSwipe(conseil), // For example, passing the action
-                          onFavorite: () => context.read<FavoritesManager>().toggle(conseil),
-                        ),
+                        child: isTopCard
+                            ? CardConseil(
+                                conseil: conseil,
+                                onTap: () => widget.onSwipe(conseil),
+                                isFavorite: context
+                                    .watch<FavoritesManager>()
+                                    .isFavorite(conseil),
+                                onShare: () => widget.onSwipe(conseil),
+                                onFavorite: () => context
+                                    .read<FavoritesManager>()
+                                    .toggle(conseil),
+                              )
+                            : Container(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .cardColor, // Use card background color
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  'Conseil', // Placeholder text
+                                  style: AppTextStyles.title.copyWith(
+                                      color:
+                                          AppColors.chocolat.withOpacity(0.5)),
+                                ),
+                              ),
                       ),
                     ),
                   );
@@ -1509,10 +1604,10 @@ class _CardStackConseilsState extends State<_CardStackConseils> with SingleTicke
               ),
             ),
           );
-        }).reversed.toList(), // Render from bottom to top so top card is interactable
+        })
+            .reversed
+            .toList(), // Render from bottom to top so top card is interactable
       ),
     );
   }
 }
-
-

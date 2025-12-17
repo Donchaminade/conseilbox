@@ -10,11 +10,34 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final socials = [
-      (Icons.business_center, 'LinkedIn', 'https://www.linkedin.com/in/ireneamedji/'),
-      (Icons.play_circle_outline, 'YouTube', 'https://example.com'),
-      (Icons.menu_book_outlined, 'Medium', 'https://example.com'),
-      (Icons.camera_alt_outlined, 'Instagram', 'https://example.com'),
-      (Icons.videocam_outlined, 'TikTok', 'https://example.com'),
+      (
+        Icons.business_center,
+        'LinkedIn',
+        'https://www.linkedin.com/in/ireneamedji/'
+      ),
+      (
+        Icons.play_circle_outline,
+        'YouTube',
+        'https://youtube.com/@ireneamedji?si=cj0MALV7wx0_0Pul'
+      ),
+      (Icons.menu_book_outlined, 'Medium', 'https://medium.com/@ireneamedji'),
+      (
+        Icons.camera_alt_outlined,
+        'Instagram',
+        'https://www.instagram.com/ireneamedji?igsh=MTdpYmx3Z3NvdzQ1MA=='
+      ),
+      (
+        Icons.videocam_outlined,
+        'TikTok',
+        'https://www.tiktok.com/@ireneamedji?_r=1&_t=ZM-92IP6QXFgT5'
+      ),
+      (Icons.flag_circle, 'X', 'https://x.com/IAmedji'),
+      (
+        Icons.facebook,
+        'Facebook',
+        'https://www.facebook.com/profile.php?id=100089122070484'
+      ),
+      (Icons.hub, 'Github', 'https://github.com/IrouKaizen'),
     ];
 
     return Scaffold(
@@ -29,13 +52,11 @@ class AboutScreen extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-
           Positioned.fill(
             child: Container(
               color: Colors.black.withValues(alpha: 0.65),
             ),
           ),
-
           SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -48,24 +69,16 @@ class AboutScreen extends StatelessWidget {
                     fontSize: 32,
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
                 const _NarrativeCard(),
-
                 const SizedBox(height: 32),
-
                 const Center(child: _FounderCard()),
-
                 const SizedBox(height: 32),
-
                 Text(
                   'Réseaux sociaux',
                   style: AppTextStyles.title.copyWith(color: Colors.white),
                 ),
-
                 const SizedBox(height: 12),
-
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
@@ -145,8 +158,12 @@ class _NarrativeCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
               _Bullet(text: 'Fil éditorial avec carrousel de publicités tech.'),
-              _Bullet(text: 'Soumission de conseils en un clic, suivi des statuts.'),
-              _Bullet(text: 'Favoris, partages sociaux et espace pubs contextualisé.'),
+              _Bullet(
+                  text:
+                      'Soumission de conseils en un clic, suivi des statuts.'),
+              _Bullet(
+                  text:
+                      'Favoris, partages sociaux et espace pubs contextualisé.'),
             ],
           ),
         ],
@@ -227,11 +244,6 @@ class _Bullet extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
 
 // import 'package:flutter/material.dart';
 // import 'package:url_launcher/url_launcher.dart';
