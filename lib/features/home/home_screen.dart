@@ -639,30 +639,53 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildFavoritesTab() {
     final favoritesManager = context.watch<FavoritesManager>();
     final favorites = favoritesManager.items;
+
+    Widget favoritesContent;
     if (favorites.isEmpty) {
-      return _buildPlaceholder(
-        title: 'Aucun favori',
-        message:
-            'Touchez le coeur d\'un conseil pour l\'enregistrer et le retrouver ici.',
+      favoritesContent = SliverToBoxAdapter(
+        child: _buildPlaceholder(
+          title: 'Aucun favori',
+          message:
+              'Touchez le coeur d\'un conseil pour l\'enregistrer et le retrouver ici.',
+        ),
+      );
+    } else {
+      favoritesContent = SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final conseil = favorites[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: CardConseil(
+                conseil: conseil,
+                onTap: () => _openDetail(conseil),
+                onShare: () => _shareConseil(conseil),
+                onFavorite: () => _toggleFavorite(conseil),
+                isFavorite: true,
+              ),
+            );
+          },
+          childCount: favorites.length,
+        ),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 120, left: 16, right: 16, top: 16),
-      itemCount: favorites.length,
-      itemBuilder: (context, index) {
-        final conseil = favorites[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: CardConseil(
-            conseil: conseil,
-            onTap: () => _openDetail(conseil),
-            onShare: () => _shareConseil(conseil),
-            onFavorite: () => _toggleFavorite(conseil),
-            isFavorite: true,
-          ),
-        );
-      },
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          title: const Text('Mes Favoris', style: TextStyle(fontSize: 25)),
+          floating: true,
+          pinned: true,
+          snap: true,
+          // If this were a new route, automaticallyImplyLeading would handle the back button.
+          // As it's a tab in an IndexedStack, a back button is not typically shown.
+          // If the user wants specific navigation between tabs, it would require custom logic.
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.only(bottom: 120, left: 16, right: 16, top: 16),
+          sliver: favoritesContent, // Use the content built above
+        ),
+      ],
     );
   }
 
@@ -988,12 +1011,13 @@ class _HomeScreenState extends State<HomeScreen> {
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        backgroundColor: AppColors.blanc,
-        foregroundColor: AppColors.chocolat,
+        backgroundColor: AppColors.chocolat.withOpacity(  0.7),
+        foregroundColor: AppColors.blanc,
         elevation: 4,
-        shadowColor: AppColors.chocolat.withOpacity(0.15),
+        shadowColor: AppColors.cafe.withOpacity(0.15),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: const Color.fromARGB(255, 247, 179, 77).withOpacity(0.8)), // Added border
         ),
       ),
       child: Column( // Icône au-dessus du texte pour un look plus moderne
@@ -1229,7 +1253,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius:
                           BorderRadius.circular(20)), // Increased border radius
                   color:
-                      AppColors.chocolat.withOpacity(0.15), // Adjusted opacity
+                      AppColors.blanc, // Adjusted opacity
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -1241,7 +1265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: AppTextStyles.title.copyWith(
                               fontSize: 18,
                               color: AppColors
-                                  .chocolat), // Larger font size for title
+                                  .cafe), // Larger font size for title
                         ),
                         const SizedBox(height: 8),
                         Text(
