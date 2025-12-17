@@ -1,3 +1,4 @@
+import 'package:conseilbox/config/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Import pour le formatage de la date
 
@@ -9,10 +10,12 @@ class PubliciteCard extends StatelessWidget {
     super.key,
     required this.publicite,
     this.onTap,
+    this.onShare,
   });
 
   final Publicite publicite;
   final VoidCallback? onTap;
+  final VoidCallback? onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -46,21 +49,27 @@ class PubliciteCard extends StatelessWidget {
                   ),
                   if (isNew)
                     Positioned(
-                      top: 8,
-                      right: 8,
+                      top: 0, // Position at top edge
+                      right: 0, // Position at right edge
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.lightGreen, // Couleur pour l'étiquette "Nouveau"
-                          borderRadius: BorderRadius.circular(4),
+                          color: const Color.fromARGB(255, 6, 158, 11)
+                              .withOpacity(0.8), // Using AppColors.chocolat
+                          borderRadius: const BorderRadius.only(
+                            topRight: Radius.circular(
+                                16), // Match card border radius top-right
+                            bottomLeft: Radius.circular(
+                                12), // Styled bottom-left corner
+                          ),
                         ),
                         child: const Text(
-                          'Nouveau',
+                          'Nouveau', // A nice "new" emoji
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              fontSize: 12,
+                              color:
+                                  Colors.black), // Larger font size for emoji
                         ),
                       ),
                     ),
@@ -77,11 +86,21 @@ class PubliciteCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           publicite.title,
-                          style: AppTextStyles.title,
+                          style: AppTextStyles.title.copyWith(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+
                           maxLines: 1, // Limiter le titre à une ligne
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      if (onShare !=
+                          null) // Only show share button if callback is provided
+                        IconButton(
+                          icon: const Icon(Icons.share),
+                          onPressed: onShare,
+                          visualDensity:
+                              VisualDensity.compact, // Make it smaller
+                        ),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -91,12 +110,12 @@ class PubliciteCard extends StatelessWidget {
                     maxLines: 1, // Tronquer le contenu à une ligne
                     overflow: TextOverflow.ellipsis,
                   ),
-
                   if (publicite.createdAt != null) ...[
                     const SizedBox(height: 8),
                     Text(
                       'Publié le ${DateFormat('dd/MM/yyyy').format(publicite.createdAt!)}',
-                      style: AppTextStyles.bodySmall, // Utiliser un style plus petit pour la date
+                      style: AppTextStyles
+                          .bodySmall, // Utiliser un style plus petit pour la date
                     ),
                   ],
                 ],

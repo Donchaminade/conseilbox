@@ -273,12 +273,17 @@ _scheduleCarouselTimer();
     );
   }
 
-  void _shareConseil(Conseil conseil) {
-    final content =
-        '${conseil.title}\n${conseil.content}\nPartagé via ConseilBox';
-    Share.share(content);
-  }
-
+          void _shareConseil(Conseil conseil) {
+            final content =
+                '${conseil.title}\n${conseil.content}\nPartagé via ConseilBox';
+            Share.share(content);
+          }
+  
+          void _sharePublicite(Publicite publicite) {
+            final content =
+                '${publicite.title}\n${publicite.content}\nPartagé via ConseilBox';
+            Share.share(content);
+          }
   Future<void> _openSuggestions() async {
     await Navigator.of(context).push(
       MaterialPageRoute(
@@ -988,15 +993,22 @@ _scheduleCarouselTimer();
             ),
           ),
           Expanded(
-            child: ListView.builder(
+            child: GridView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 120, top: 0),
+              padding: const EdgeInsets.only(bottom: 120, left: 16, right: 16, top: 0), // Add horizontal padding
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // Two columns
+                crossAxisSpacing: 2, // Spacing between columns
+                mainAxisSpacing: 4, // Spacing between rows
+                childAspectRatio: 0.80, // Increased height for publicite cards
+              ),
               itemCount: _publicites.length,
               itemBuilder: (context, index) {
                 final pub = _publicites[index];
                 return PubliciteCard(
                   publicite: pub,
                   onTap: () => _openPubliciteDetail(pub),
+                  onShare: () => _sharePublicite(pub), // Pass the share callback
                 );
               },
             ),

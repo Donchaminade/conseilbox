@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart'; // Import pour lancer les URLs
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../config/app_colors.dart';
 import '../../config/app_text_styles.dart';
@@ -15,6 +16,12 @@ class PubliciteDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Espace pub'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () => _sharePublicite(context, publicite),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -63,6 +70,19 @@ class PubliciteDetailScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _sharePublicite(BuildContext context, Publicite publicite) {
+    String shareContent = publicite.title;
+    if (publicite.targetUrl != null && publicite.targetUrl!.isNotEmpty) {
+      shareContent += '\n${publicite.targetUrl!}';
+    }
+    if (publicite.imageUrl != null && publicite.imageUrl!.isNotEmpty) {
+      shareContent += '\n${publicite.imageUrl!}'; // Share image URL for context
+    }
+    shareContent += '\nPartagé via ConseilBox';
+
+    Share.share(shareContent, subject: publicite.title);
   }
 }
 
