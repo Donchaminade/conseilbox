@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:conseilbox/config/app_colors.dart';
 import 'package:conseilbox/features/home/home_screen.dart'; // Import pour HomeScreen
@@ -17,8 +18,9 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _zoomAnimation;
+
   late Animation<double> _rotationAnimation;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
@@ -27,27 +29,62 @@ class _SplashScreenState extends State<SplashScreen>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
-    )..repeat();
-
-    _zoomAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Curves.fastLinearToSlowEaseIn,
+        curve:
+            const Interval(0.0, 0.3, curve: Curves.easeIn), // Fade in quickly
       ),
     );
 
-    _rotationAnimation = Tween<double>(begin: 0, end: 3).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutExpo,
-      ),
-    );
+    
+
+        _rotationAnimation = TweenSequence<double>([
+
+    
+
+          TweenSequenceItem(
+
+    
+
+            tween: Tween<double>(begin: 0.0, end: 0.5).chain(CurveTween(curve: Curves.easeOutCubic)),
+
+    
+
+            weight: 0.5, // First half of the animation: 0 to 180 degrees
+
+    
+
+          ),
+
+    
+
+          TweenSequenceItem(
+
+    
+
+            tween: Tween<double>(begin: 0.5, end: 0.0).chain(CurveTween(curve: Curves.easeInCubic)),
+
+    
+
+            weight: 0.5, // Second half of the animation: 180 to 0 degrees
+
+    
+
+          ),
+
+    
+
+        ]).animate(_controller);
+
+    _controller.forward();
 
     _checkLoginStatus();
   }
 
   Future<void> _checkLoginStatus() async {
-    await Future.delayed(const Duration(seconds: 5)); // Keep splash screen visible for animation
+        await Future.delayed(const Duration(seconds: 5)); // Keep splash screen visible for animation
 
     if (!mounted) return;
 
@@ -79,33 +116,69 @@ class _SplashScreenState extends State<SplashScreen>
         children: [
           const GeometricBackground(),
           Center(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                RotationTransition(
-                  turns: _rotationAnimation,
-                  child: Container(
-                    width: 250,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color:
-                            AppColors.cafe, //couleur du cercle autour du logo
-                        width: 6,
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  RotationTransition(
+                    turns: _rotationAnimation,
+                    child: CustomPaint(
+                      painter: _OpenCirclePainter(
+                        borderColor: AppColors.cafe,
+                        borderWidth: 6,
                       ),
+                      size: const Size(250, 250), // Specify the size of the canvas
                     ),
                   ),
-                ),
-                ScaleTransition(
-                  scale: _zoomAnimation, //animation du logo
-                  child: Image.asset('assets/images/logo.png', width: 200),
-                ),
-              ],
+                  Image.asset('assets/images/logo.png', width: 200),
+                ],
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+// Custom Painter for an open circle
+class _OpenCirclePainter extends CustomPainter {
+  final Color borderColor;
+  final double borderWidth;
+  final double startAngle;
+  final double sweepAngle;
+
+  _OpenCirclePainter({
+    required this.borderColor,
+    required this.borderWidth,
+    this.startAngle = -math.pi / 2, // Start from top center
+    this.sweepAngle = math.pi * 1.5, // Draw 270 degrees
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = borderColor
+      ..strokeWidth = borderWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round; // Optional: round caps for the open ends
+
+    final rect = Rect.fromCircle(
+        center: Offset(size.width / 2, size.height / 2),
+        radius: size.width / 2);
+
+    canvas.drawArc(
+      rect,
+      startAngle, // Start angle (e.g., -math.pi / 2 for top)
+      sweepAngle, // Sweep angle (e.g., math.pi * 1.5 for 270 degrees)
+      false, // UseCenter
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false; // For simplicity, assume it doesn't need repaint
   }
 }
